@@ -143,7 +143,7 @@
 		"wrap-iife": "error",
 		"yoda": "error",
 		"strict": "error",
-		"init-declarations": "error",
+		"init-declarations": "off",
 		"no-catch-shadow": "error",
 		"no-delete-var": "error",
 		"no-label-var": "error",
@@ -158,7 +158,7 @@
 		"array-bracket-spacing": "error",
 		"block-spacing": "error",
 		"brace-style": "error",
-		"camelcase": "error",
+		"camelcase": "off",
 		"capitalized-comments": "off",
 		"comma-dangle": [
 			"error",
