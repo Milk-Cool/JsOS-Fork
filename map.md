@@ -3,6 +3,7 @@
 ## English
 
 src - Here are loader and kernel sources (c++ and asm)
+
 js - OS files
 - apps - Apps installed via `install` comamnd
 - core - OS core
@@ -31,6 +32,7 @@ js - OS files
 ## Russian
 
 src - Здесь находятся исходники загрузчика и ядра на c++ и asm
+
 js - Файлы операционной системы
 - apps - Программы, устанавливаемые с помощью команды `install`
 - core - Ядро операционной системы
