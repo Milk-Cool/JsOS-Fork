@@ -27,7 +27,8 @@ module.exports = {
     let resolved = null;
 
     if (utils.isSystemPath(path)) {
-      if (path[path.length - 1] !== '/') path = [path, '/'].join('');
+      // Remove last splash
+      if (path[path.length - 1] === '/') path = path.slice(0, path.length - 1);
 
       log(`${path} is a system path`, { level: 'fs' });
 
@@ -36,10 +37,14 @@ module.exports = {
       log(`${path} extracted to ${extpath}`, { level: 'fs' });
 
       const find = __SYSCALL.initrdListFiles();
-      const dirs = new Set(find.map((el) => el.slice(extpath.length).split('/')[0]));
-      // console.log(`>> extpath: ${extpath};\n out: ${el.slice(extpath.length).split('/')[0]}`);
 
-      console.log(dirs);
+      // Set is faster than .filter((value, i, arr) => arr.indexOf(value) === i)
+      const dirs = new Set(
+        find
+          .filter((findPath) => findPath.slice(0, extpath.length + 1) === `${extpath}/`)
+          .map((findPath) => findPath.slice(extpath.length + 1))
+          .map((name) => name.split('/')[0])
+      );
 
       success('OK!', { from: 'FS->readdir->System', level: 'fs' });
       callback(null, Array.from(dirs).sort());
