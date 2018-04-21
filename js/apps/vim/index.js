@@ -1,10 +1,12 @@
 'use strict';
 
 const Vim = require('./js-vim');
-let vim;
-let kb;
-let io;
-let res;
+const fs = require('fs');
+
+let vim = null;
+let kb  = null;
+let io  = null;
+let res = null;
 
 const kbaliases = {
   'enter':     '\n',
@@ -38,7 +40,7 @@ function exit () {
   res(0);
 }
 
-function main (api, cb) {
+function main (app, strargs, api, cb) {
   vim = new Vim();
 
   require('./lib/commands')(vim, exit);
@@ -46,6 +48,8 @@ function main (api, cb) {
   kb = api.keyboard;
   io = api.stdio;
   res = cb;
+
+  const args = strargs.split(/\s+/);
 
   kb.onKeydown.add(keyboard);
 
@@ -58,7 +62,7 @@ function main (api, cb) {
     const newLines = vim.view.getArray();
 
     for (let i = 0; i < newLines.length; i++) {
-      if (newLines[i] != previousLines[i]) {
+      if (newLines[i] !== previousLines[i]) {
         // Line changed, redraw it
         io.moveTo(0, i);
         io.write(newLines[i]);
@@ -70,8 +74,26 @@ function main (api, cb) {
 
     previousLines = newLines;
   });
+
+  if (args[0]) {
+    vim.notify('Loading file...');
+    fs.readFile(args[0], (err, data) => {
+      if (err) {
+        const errmsg = `Error: Can't read the file ${args[0]}`;
+
+        debug(errmsg);
+        vim.notify(errmsg);
+
+        return;
+      }
+
+      const doc = new vim.Doc();
+
+      doc.path = args[0];
+      doc.text(data);
+      vim.add(doc);
+    });
+  }
 }
 exports.commands = ['vim'];
-exports.call = (app, args, api, cb) => {
-  main(api, cb);
-};
+exports.call = main;
