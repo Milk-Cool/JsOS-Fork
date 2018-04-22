@@ -11,9 +11,17 @@ class GitLab {
 	}
 
 
-	readDir(path) {
-		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?path=${path}`)
+	readDir(path, commit) {
+		if(commit === "pages") {
+			commit = "master";
+		}
+
+		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?ref_name=${commit}&path=${path}`)
 			.then(files => {
+				if(files.message == "404 Tree Not Found") {
+					throw new Error("No ref " + commit);
+				}
+
 				if(!Array.isArray(files)) {
 					throw new Error(path + " is not a directory");
 				}
@@ -24,8 +32,20 @@ class GitLab {
 				return files;
 			});
 	}
-	readDirRecursively(path) {
-		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?path=${path}&recursive=true`);
+	readDirRecursively(path, commit) {
+		if(commit === "pages") {
+			commit = "master";
+		}
+
+		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?path=${path}&recursive=true&ref_name=${commit}`);
+	}
+
+	readFileRaw(path, commit) {
+		if(commit === "pages") {
+			return this.readFilePages(path);
+		}
+
+		return get(`https://gitlab.com/${this.author}/NPI-pkg/raw/${commit}/${path}`);
 	}
 	readFilePages(path) {
 		return get(`https://${this.author.toLowerCase()}.gitlab.io/NPI-pkg/${path}`);
