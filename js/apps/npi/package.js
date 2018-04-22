@@ -137,7 +137,7 @@ class Package {
 			backend = this.gitlab;
 		}
 
-		return backend.readFilePages(this.backend === "gitlab" ? file.path : `packages/${this.name}/${file.path}`, commit)
+		return backend.readFileRaw(this.backend === "gitlab" ? file.path : `packages/${this.name}/${file.path}`, commit)
 			.then(code => {
 				if(this.installationStopped) {
 					return;
