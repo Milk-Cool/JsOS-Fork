@@ -2,8 +2,9 @@ const GitHub = require("./github");
 const GitLab = require("./gitlab");
 
 class Package {
-	constructor(name, backend="github", backendAuthor=null) {
+	constructor(name, version="latest", backend="github", backendAuthor=null) {
 		this.name = name;
+		this.version = version;
 		this.installationStopped = false;
 
 		this.backend = backend;
@@ -17,13 +18,15 @@ class Package {
 		};
 		let pkg;
 
+		const commit = this.version === "latest" ? "master" : this.version;
+
 		return Promise.resolve()
 			.then(() => {
 				// Get package
 				if(this.backend === "github") {
-					return this.github.readDir("packages");
+					return this.github.readDir("packages", commit);
 				} else if(this.backend === "gitlab") {
-					return this.gitlab.readDir("packages");
+					return this.gitlab.readDir("packages", commit);
 				}
 			})
 			.then(packages => {
@@ -35,7 +38,7 @@ class Package {
 				if(this.backend === "github") {
 					info.url = pkg.html_url;
 				} else if(this.backend === "gitlab") {
-					info.url = "https://gitlab.com/JsOS/NPI-pkg/tree/master/packages/" + this.name;
+					info.url = `https://gitlab.com/JsOS/NPI-pkg/tree/${commit}/packages/${this.name}`;
 				}
 
 				info.sha = pkg.sha;
@@ -43,7 +46,7 @@ class Package {
 				info.module = null;
 				if(this.backend === "github") {
 					// Get module
-					return this.github.readModule(`packages/${this.name}`)
+					return this.github.readModule(`packages/${this.name}`, commit)
 						.then(module => {
 							info.module = module.submodule_git_url;
 						}, () => {
@@ -56,7 +59,7 @@ class Package {
 				if(this.backend === "github") {
 					return this.github.readTree(pkg.sha);
 				} else if(this.backend === "gitlab") {
-					return this.gitlab.readDirRecursively(`packages/${this.name}`);
+					return this.gitlab.readDirRecursively(`packages/${this.name}`, commit);
 				}
 			}).then(tree => {
 				info.files = 0;
@@ -76,6 +79,9 @@ class Package {
 	install(io) {
 		this.installationStopped = false;
 
+
+		const commit = this.version === "latest" ? "master" : this.version;
+
 		return Promise.resolve()
 			.then(() => {
 				if(this.backend === "github") {
@@ -92,7 +98,7 @@ class Package {
 				}
 			})
 			.then(tree => {
-				return Promise.all((tree.tree || tree).map(file => this.installFile(file, io)))
+				return Promise.all((tree.tree || tree).map(file => this.installFile(file, commit, io)))
 					.catch(e => {
 						this.installationStopped = true;
 						throw e;
@@ -117,7 +123,7 @@ class Package {
 				io.writeLine(`Installed package ${this.name}`);
 			});
 	}
-	installFile(file, io) {
+	installFile(file, commit, io) {
 		if(file.type != "blob") {
 			return;
 		}
@@ -131,7 +137,7 @@ class Package {
 			backend = this.gitlab;
 		}
 
-		return backend.readFilePages(this.backend === "gitlab" ? file.path : `packages/${this.name}/${file.path}`)
+		return backend.readFilePages(this.backend === "gitlab" ? file.path : `packages/${this.name}/${file.path}`, commit)
 			.then(code => {
 				if(this.installationStopped) {
 					return;

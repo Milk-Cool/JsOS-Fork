@@ -21,7 +21,7 @@ class GitHub {
 	}
 
 
-	readDir(path) {
+	readDir(path, commit) {
 		return this.api(`repos/${this.author}/NPI-pkg/contents/${path}`)
 			.then(files => {
 				if(!Array.isArray(files)) {
@@ -31,7 +31,7 @@ class GitHub {
 				}
 			});
 	}
-	readModule(path) {
+	readModule(path, commit) {
 		return this.api(`repos/${this.author}/NPI-pkg/contents/${path}`)
 			.then(module => {
 				if(module.type !== "submodule") {
@@ -44,7 +44,7 @@ class GitHub {
 	readTree(sha) {
 		return this.api(`repos/${this.author}/NPI-pkg/git/trees/${sha}?recursive=1`);
 	}
-	readFilePages(path) {
+	readFilePages(path, commit) {
 		return get(`https://${this.author.toLowerCase()}.github.io/NPI-pkg/${path}`);
 	}
 };

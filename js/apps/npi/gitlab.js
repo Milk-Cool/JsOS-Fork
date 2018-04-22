@@ -11,7 +11,7 @@ class GitLab {
 	}
 
 
-	readDir(path) {
+	readDir(path, commit) {
 		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?path=${path}`)
 			.then(files => {
 				if(!Array.isArray(files)) {
@@ -24,10 +24,10 @@ class GitLab {
 				return files;
 			});
 	}
-	readDirRecursively(path) {
+	readDirRecursively(path, commit) {
 		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?path=${path}&recursive=true`);
 	}
-	readFilePages(path) {
+	readFilePages(path, commit) {
 		return get(`https://${this.author.toLowerCase()}.gitlab.io/NPI-pkg/${path}`);
 	}
 };

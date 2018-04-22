@@ -30,6 +30,7 @@ function main(args, api, res) {
 					io.setColor("yellow");
 					io.writeLine("JsOS/NPI - No Problem Installer");
 					io.writeLine("install <pkg>           Install <pkg> package");
+					io.writeLine("install <pkg>@<commit>  Install <pkg> package from commit in NPI-pkg");
 					io.writeLine("i <pkg>                 <alias>");
 					break;
 
@@ -63,7 +64,10 @@ function main(args, api, res) {
 				return res(1);
 			}
 
-			const pkg = new Package(args[0], backend, backendAuthor);
+			const name = args[0].split("@")[0];
+			const version = args[0].split("@")[1] || "latest";
+
+			const pkg = new Package(name, version, backend, backendAuthor);
 			pkg.getInfo()
 				.then(info => {
 					io.setColor("white");
@@ -92,7 +96,10 @@ function main(args, api, res) {
 				return res(1);
 			}
 
-			const pkg = new Package(args[0], backend, backendAuthor);
+			const name = args[0].split("@")[0];
+			const version = args[0].split("@")[1] || "latest";
+
+			const pkg = new Package(name, version, backend, backendAuthor);
 			pkg.install(io)
 				.then(
 					() => res(0),
