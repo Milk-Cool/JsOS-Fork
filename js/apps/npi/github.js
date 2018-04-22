@@ -22,7 +22,7 @@ class GitHub {
 
 
 	readDir(path, commit) {
-		return this.api(`repos/${this.author}/NPI-pkg/contents/${path}`)
+		return this.api(`repos/${this.author}/NPI-pkg/contents/${path}?ref=${commit}`)
 			.then(files => {
 				if(!Array.isArray(files)) {
 					throw new Error(path + " is not a directory");
@@ -32,7 +32,7 @@ class GitHub {
 			});
 	}
 	readModule(path, commit) {
-		return this.api(`repos/${this.author}/NPI-pkg/contents/${path}`)
+		return this.api(`repos/${this.author}/NPI-pkg/contents/${path}?ref=${commit}`)
 			.then(module => {
 				if(module.type !== "submodule") {
 					throw new Error(path + " is not a module");
