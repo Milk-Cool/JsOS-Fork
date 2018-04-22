@@ -124,7 +124,14 @@ class Package {
 
 		io.writeLine("Downloading " + file.path);
 
-		return this.github.readFilePages(this.backend === "gitlab" ? file.path : `packages/${this.name}/${file.path}`)
+		let backend = null;
+		if(this.backend == "github") {
+			backend = this.github;
+		} else if(this.backend == "gitlab") {
+			backend = this.gitlab;
+		}
+
+		return backend.readFilePages(this.backend === "gitlab" ? file.path : `packages/${this.name}/${file.path}`)
 			.then(code => {
 				if(this.installationStopped) {
 					return;

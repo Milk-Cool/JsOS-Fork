@@ -27,6 +27,9 @@ class GitLab {
 	readDirRecursively(path) {
 		return this.api(`projects/${this.repoId}/repository/tree/?path=${path}&recursive=true`);
 	}
+	readFilePages(path) {
+		return get("https://jsos.gitlab.io/NPI-pkg/" + path);
+	}
 };
 
 module.exports = GitLab;
