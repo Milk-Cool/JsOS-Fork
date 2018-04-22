@@ -1,7 +1,8 @@
 const get = require("./get");
 
 class GitLab {
-	constructor() {
+	constructor(author) {
+		this.author = author || "JsOS";
 	}
 
 	api(path) {
@@ -11,7 +12,7 @@ class GitLab {
 
 
 	readDir(path) {
-		return this.api(`projects/JsOS%2FNPI-pkg/repository/tree/?path=${path}`)
+		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?path=${path}`)
 			.then(files => {
 				if(!Array.isArray(files)) {
 					throw new Error(path + " is not a directory");
@@ -24,10 +25,10 @@ class GitLab {
 			});
 	}
 	readDirRecursively(path) {
-		return this.api(`projects/JsOS%2FNPI-pkg/repository/tree/?path=${path}&recursive=true`);
+		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?path=${path}&recursive=true`);
 	}
 	readFilePages(path) {
-		return get("https://jsos.gitlab.io/NPI-pkg/" + path);
+		return get(`https://${this.author.toLowerCase()}.gitlab.io/NPI-pkg/${path}`);
 	}
 };
 
