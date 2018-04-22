@@ -14,6 +14,10 @@ class GitLab {
 	readDir(path, commit) {
 		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?ref_name=${commit}&path=${path}`)
 			.then(files => {
+				if(files.message == "404 Tree Not Found") {
+					throw new Error("No ref " + commit);
+				}
+
 				if(!Array.isArray(files)) {
 					throw new Error(path + " is not a directory");
 				}
