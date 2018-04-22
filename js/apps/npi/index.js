@@ -5,6 +5,7 @@
 
 const Package = require("./package");
 let backend = "gitlab";
+let backendAuthor = "JsOS";
 
 function main(args, api, res) {
 	const io = api.stdio;
@@ -20,33 +21,34 @@ function main(args, api, res) {
 				case "info":
 					io.setColor("yellow");
 					io.writeLine("JsOS/NPI - No Problem Installer");
-					io.writeLine("info <pkg>      Show info about <pkg> package");
-					io.writeLine("f <pkg>         <alias>");
+					io.writeLine("info <pkg>              Show info about <pkg> package");
+					io.writeLine("f <pkg>                 <alias>");
 					break;
 
 				case "i":
 				case "install":
 					io.setColor("yellow");
 					io.writeLine("JsOS/NPI - No Problem Installer");
-					io.writeLine("install <pkg>   Install <pkg> package");
-					io.writeLine("i <pkg>         <alias>");
+					io.writeLine("install <pkg>           Install <pkg> package");
+					io.writeLine("i <pkg>                 <alias>");
 					break;
 
 				case "backend":
 					io.setColor("yellow");
 					io.writeLine("JsOS/NPI - No Problem Installer");
-					io.writeLine("backend gitlab  Use GitLab API to get packages");
-					io.writeLine("backend github  Use GitHub API to get packages");
+					io.writeLine("backend gitlab          Use GitLab API to get packages");
+					io.writeLine("backend github          Use GitHub API to get packages");
+					io.writeLine("backend github:<author> Use https://github.com/<author>/NPI-pkg repository");
 					break;
 
 				default:
 					io.setColor("yellow");
 					io.writeLine("JsOS/NPI - No Problem Installer");
 					io.writeLine("Commands:");
-					io.writeLine("help            Show command or subcommand help");
-					io.writeLine("info            Show package info");
-					io.writeLine("install         Install package");
-					io.writeLine("backend         Set backend");
+					io.writeLine("help                    Show command or subcommand help");
+					io.writeLine("info                    Show package info");
+					io.writeLine("install                 Install package");
+					io.writeLine("backend                 Set backend");
 					break;
 			}
 
@@ -61,7 +63,7 @@ function main(args, api, res) {
 				return res(1);
 			}
 
-			const pkg = new Package(args[0], backend);
+			const pkg = new Package(args[0], backend, backendAuthor);
 			pkg.getInfo()
 				.then(info => {
 					io.setColor("white");
@@ -90,7 +92,7 @@ function main(args, api, res) {
 				return res(1);
 			}
 
-			const pkg = new Package(args[0], backend);
+			const pkg = new Package(args[0], backend, backendAuthor);
 			pkg.install(io)
 				.then(
 					() => res(0),
@@ -104,14 +106,18 @@ function main(args, api, res) {
 		}
 
 		case "backend": {
-			if(args[0] !== "github" && args[0] !== "gitlab") {
+			const name = args[0].split(":")[0];
+
+			if(name !== "github" && name !== "gitlab") {
 				io.setColor("red");
 				io.writeLine("npi backend: choose github or gitlab");
 				return res(1);
 			}
 
-			backend = args[0];
-			io.writeLine("Backend set to " + backend);
+
+			backend = name;
+			backendAuthor = args[0].split(":")[1];
+			io.writeLine("Backend set to " + args[0]);
 			res(0);
 			break;
 		}

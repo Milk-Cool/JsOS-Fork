@@ -2,13 +2,13 @@ const GitHub = require("./github");
 const GitLab = require("./gitlab");
 
 class Package {
-	constructor(name, backend="github") {
+	constructor(name, backend="github", backendAuthor=null) {
 		this.name = name;
 		this.installationStopped = false;
 
 		this.backend = backend;
-		this.github = new GitHub();
-		this.gitlab = new GitLab();
+		this.github = new GitHub(backendAuthor);
+		this.gitlab = new GitLab(backendAuthor);
 	}
 
 	getInfo() {
