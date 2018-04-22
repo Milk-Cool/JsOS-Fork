@@ -31,6 +31,7 @@ function main(args, api, res) {
 					io.writeLine("JsOS/NPI - No Problem Installer");
 					io.writeLine("install <pkg>           Install <pkg> package");
 					io.writeLine("install <pkg>@<commit>  Install <pkg> package from commit in NPI-pkg");
+					io.writeLine("install <pkg>@<version> Install <pkg> package by version");
 					io.writeLine("i <pkg>                 <alias>");
 					break;
 
