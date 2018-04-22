@@ -92,9 +92,9 @@ class Package {
 			.then(info => {
 				io.writeLine("Gathering package");
 				if(this.backend === "github") {
-					return this.github.readTree(info.sha);
+					return this.github.readTree(info.sha, commit);
 				} else if(this.backend === "gitlab") {
-					return this.gitlab.readDirRecursively(`packages/${this.name}`)
+					return this.gitlab.readDirRecursively(`packages/${this.name}`, commit);
 				}
 			})
 			.then(tree => {
