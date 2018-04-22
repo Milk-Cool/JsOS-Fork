@@ -12,7 +12,7 @@ class GitLab {
 
 
 	readDir(path, commit) {
-		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?ref=${commit}&path=${path}`)
+		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?ref_name=${commit}&path=${path}`)
 			.then(files => {
 				if(!Array.isArray(files)) {
 					throw new Error(path + " is not a directory");
@@ -25,7 +25,7 @@ class GitLab {
 			});
 	}
 	readDirRecursively(path, commit) {
-		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?path=${path}&recursive=true&ref=${commit}`);
+		return this.api(`projects/${this.author}%2FNPI-pkg/repository/tree/?path=${path}&recursive=true&ref_name=${commit}`);
 	}
 	readFilePages(path, commit) {
 		return get(`https://${this.author.toLowerCase()}.gitlab.io/NPI-pkg/${path}`);
