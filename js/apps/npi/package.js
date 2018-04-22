@@ -7,9 +7,29 @@ class Package {
 		this.version = version;
 		this.installationStopped = false;
 
+		if(version === "latest") {
+			this.commit = "master";
+		} else if(this.isSha(version)) {
+			this.commit = version;
+		} else {
+			if(version[0] === "v" && !isNaN(parseInt(version[1]))) {
+				version = version.substr(1);
+			}
+			this.commit = this.name + "--" + version;
+		}
+
 		this.backend = backend;
 		this.github = new GitHub(backendAuthor);
 		this.gitlab = new GitLab(backendAuthor);
+	}
+
+	isSha(version) {
+		return (
+			version.length === 40 && // Exactly 40 characters, and
+			Array.from(version.toLowerCase()).every(c => { // each character
+				return "0123456789abcdef".indexOf(c) > -1; // is a hex digit
+			})
+		);
 	}
 
 	getInfo() {
@@ -18,15 +38,13 @@ class Package {
 		};
 		let pkg;
 
-		const commit = this.version === "latest" ? "master" : this.version;
-
 		return Promise.resolve()
 			.then(() => {
 				// Get package
 				if(this.backend === "github") {
-					return this.github.readDir("packages", commit);
+					return this.github.readDir("packages", this.commit);
 				} else if(this.backend === "gitlab") {
-					return this.gitlab.readDir("packages", commit);
+					return this.gitlab.readDir("packages", this.commit);
 				}
 			})
 			.then(packages => {
@@ -38,7 +56,7 @@ class Package {
 				if(this.backend === "github") {
 					info.url = pkg.html_url;
 				} else if(this.backend === "gitlab") {
-					info.url = `https://gitlab.com/JsOS/NPI-pkg/tree/${commit}/packages/${this.name}`;
+					info.url = `https://gitlab.com/JsOS/NPI-pkg/tree/${this.commit}/packages/${this.name}`;
 				}
 
 				info.sha = pkg.sha;
@@ -46,7 +64,7 @@ class Package {
 				info.module = null;
 				if(this.backend === "github") {
 					// Get module
-					return this.github.readModule(`packages/${this.name}`, commit)
+					return this.github.readModule(`packages/${this.name}`, this.commit)
 						.then(module => {
 							info.module = module.submodule_git_url;
 						}, () => {
@@ -59,7 +77,7 @@ class Package {
 				if(this.backend === "github") {
 					return this.github.readTree(pkg.sha);
 				} else if(this.backend === "gitlab") {
-					return this.gitlab.readDirRecursively(`packages/${this.name}`, commit);
+					return this.gitlab.readDirRecursively(`packages/${this.name}`, this.commit);
 				}
 			}).then(tree => {
 				info.files = 0;
@@ -79,9 +97,6 @@ class Package {
 	install(io) {
 		this.installationStopped = false;
 
-
-		const commit = this.version === "latest" ? "master" : this.version;
-
 		return Promise.resolve()
 			.then(() => {
 				if(this.backend === "github") {
@@ -92,13 +107,13 @@ class Package {
 			.then(info => {
 				io.writeLine("Gathering package");
 				if(this.backend === "github") {
-					return this.github.readTree(info.sha, commit);
+					return this.github.readTree(info.sha, this.commit);
 				} else if(this.backend === "gitlab") {
-					return this.gitlab.readDirRecursively(`packages/${this.name}`, commit);
+					return this.gitlab.readDirRecursively(`packages/${this.name}`, this.commit);
 				}
 			})
 			.then(tree => {
-				return Promise.all((tree.tree || tree).map(file => this.installFile(file, commit, io)))
+				return Promise.all((tree.tree || tree).map(file => this.installFile(file, io)))
 					.catch(e => {
 						this.installationStopped = true;
 						throw e;
@@ -123,7 +138,7 @@ class Package {
 				io.writeLine(`Installed package ${this.name}`);
 			});
 	}
-	installFile(file, commit, io) {
+	installFile(file, io) {
 		if(file.type != "blob") {
 			return;
 		}
@@ -137,7 +152,7 @@ class Package {
 			backend = this.gitlab;
 		}
 
-		return backend.readFileRaw(this.backend === "gitlab" ? file.path : `packages/${this.name}/${file.path}`, commit)
+		return backend.readFileRaw(this.backend === "gitlab" ? file.path : `packages/${this.name}/${file.path}`, this.commit)
 			.then(code => {
 				if(this.installationStopped) {
 					return;
