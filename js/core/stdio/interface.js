@@ -23,6 +23,7 @@ class StdioInterface {
     this.onsetcolor = () => {};
     this.onsetbackgroundcolor = () => {};
     this.onmoveto = () => {};
+    this.onmoveoffset = () => {};
 
     this.write = this.write.bind(this);
     this.writeError = this.writeError.bind(this);
@@ -61,6 +62,9 @@ class StdioInterface {
 
   moveTo (x, y) {
     this.onmoveto(x, y);
+  }
+  moveOffset (offset) {
+    this.onmoveoffset(offset);
   }
 
   clear () {

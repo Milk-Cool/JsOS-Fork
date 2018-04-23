@@ -49,6 +49,7 @@ defaultStdio.onsetbackgroundcolor = (bg) => {
 };
 
 defaultStdio.onmoveto = (x, y) => tty.moveTo(x, y);
+defaultStdio.onmoveoffset = (offset) => tty.moveOffset(offset);
 
 defaultStdio.onread = (cb) => tty.read(cb);
 
