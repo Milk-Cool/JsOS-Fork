@@ -25,19 +25,19 @@ function get(path, cb) {
 				done = true;
 				reject(e);
 			});
-
-			setTimeout(() => {
-				if(done) {
-					return;
-				}
-
-				if(tries === 0) {
-					reject(new Error("Timeout on " + path));
-				} else {
-					once(resolve, reject, tries - 1);
-				}
-			}, 20000);
 		});
+
+		setTimeout(() => {
+			if(done) {
+				return;
+			}
+
+			if(tries === 0) {
+				reject(new Error("Timeout on " + path));
+			} else {
+				once(resolve, reject, tries - 1);
+			}
+		}, 20000);
 	}
 
 	// Try 3 times on timeout
