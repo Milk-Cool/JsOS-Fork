@@ -101,7 +101,9 @@ function main(args, api, res) {
 			const version = args[0].split("@")[1] || "latest";
 
 			const pkg = new Package(name, version, backend, backendAuthor);
-			pkg.install(io)
+			pkg.install({
+				write: io.writeLine.bind(io)
+			})
 				.then(
 					() => res(0),
 					e => {

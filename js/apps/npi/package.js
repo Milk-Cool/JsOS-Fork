@@ -100,12 +100,12 @@ class Package {
 		return Promise.resolve()
 			.then(() => {
 				if(this.backend === "github") {
-					io.writeLine("Getting information");
+					io.write("Getting information");
 					return this.getInfo();
 				}
 			})
 			.then(info => {
-				io.writeLine("Gathering package");
+				io.write("Gathering package");
 				if(this.backend === "github") {
 					return this.github.readTree(info.sha, this.commit);
 				} else if(this.backend === "gitlab") {
@@ -120,7 +120,7 @@ class Package {
 					});
 			})
 			.then(() => {
-				io.writeLine(`Installing package ${this.name}`);
+				io.write(`Installing package ${this.name}`);
 
 				const app = require(`npi/${this.name}`);
 
@@ -135,7 +135,7 @@ class Package {
 					PERSISTENCE.Apps._commands[command] = this.name;
 				}
 
-				io.writeLine(`Installed package ${this.name}`);
+				io.write(`Installed package ${this.name}`);
 			});
 	}
 	installFile(file, io) {
@@ -143,7 +143,7 @@ class Package {
 			return;
 		}
 
-		io.writeLine("Downloading " + file.path);
+		io.write("Downloading " + file.path);
 
 		let backend = null;
 		if(this.backend == "github") {
@@ -165,7 +165,7 @@ class Package {
 					path = `${this.name}/${path}`;
 				}
 				require.register(`/node_modules/npi/${path}`, code);
-				io.writeLine("Installed " + file.path);
+				io.write("Installed " + file.path);
 			});
 	}
 };
