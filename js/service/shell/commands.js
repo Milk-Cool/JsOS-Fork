@@ -17,7 +17,8 @@
 'use strict';
 
 const processor = require('./index.js');
-const { log, warn } = $$.logger;
+const { TerminalError } = require('errors');
+const { log, warn, error } = $$.logger;
 
 debug('Loading commands...');
 
@@ -217,6 +218,7 @@ const cmds = {
           }
         }
         log(firstsec);
+
         return iface.read(firstsec, whilebuf);
       })
         .then((fsbuf) => {
@@ -344,12 +346,26 @@ const cmds = {
   },
   'jsmb': {
     'description': 'Initialize global jsmb variable',
-    'usage': 'jsmb',
-    run(args, f, res) {
+    'usage':       'jsmb',
+    run (args, f, res) {
       global.jsmb = require('../../core/graphics/jsmb');
       f.stdio.writeLine('JsMobileBasic initialized!');
 
       return res(0);
+    },
+  },
+  'gui': {
+    'description': 'Test new GUI',
+    'usage':       'gui',
+    run (args, f, res) {
+      try {
+        f.stdio.setColor('yellow');
+        f.stdio.writeLine('Initializing GUI...');
+        require('../gui')(res);
+      } catch (e) {
+        new TerminalError(`GUI crashed! ${e.message}`); // eslint-disable-line
+        throw e; // eslint-disable-line
+      }
     },
   },
 };
