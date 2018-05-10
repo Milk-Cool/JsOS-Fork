@@ -78,4 +78,8 @@ module.exports = class GBuffer {
     // TODO: Write me!
     return true;
   }
+
+  render () {
+    // TODO: Render to the screen
+  }
 };
