@@ -1,0 +1,19 @@
+{
+  "default"   : null,
+	"crosshair" : null,
+	"help"      : null,
+	"move"      : null,
+	"pointer"   : null,
+	"progress"  : null,
+	"text"      : null,
+	"wait"      : null,
+	"n-resize"  : null,
+	"ne-resize" : null,
+	"e-resize"  : null,
+  "se-resize" : null,
+	"s-resize"  : null,
+	"sw-resize" : null,
+	"w-resize"  : null,
+  "nw-resize" : null,
+  "cell"      : null
+}

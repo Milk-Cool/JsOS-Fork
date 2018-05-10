@@ -23,7 +23,7 @@ module.exports = class Cursor {
       this.y = y;
       this.w = w;
       this.h = h;
-      this.state = 'standart';
+      this.state = 'default';
       this.color = [0xFF, 0xFF, 0xFF];
       try {
         this.image = require(`./cursors/${image}`);
