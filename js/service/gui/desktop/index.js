@@ -16,25 +16,6 @@
 
 'use strict';
 
-const Color = require('../utils/Color');
+const Desktop = require('./Desktop');
 
-module.exports = class Desktop {
-  constructor (background) {
-    try {
-      this.background = new Color(background); // If background is a Color
-      this.backgroundImage = null;
-    } catch (e) {
-      this.background = new Color([128, 64, 0]);
-      this.backgroundImage = background;
-    }
-  }
-
-  /** Render
-   * @param  {GBuffer} buffer - GBuffer of screen
-   */
-  render (buffer) {
-    const rgba = this.background.toRgba();
-
-    buffer.buffer.map((_, i) => rgba[i % buffer.colorLength]);
-  }
-};
+module.exports = new Desktop();

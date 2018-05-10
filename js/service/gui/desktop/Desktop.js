@@ -16,10 +16,25 @@
 
 'use strict';
 
-const Cursor = require('./Cursor');
+const Color = require('../utils/Color');
 
-const cursor = new Cursor();
+module.exports = class Desktop {
+  constructor (background) {
+    try {
+      this.background = new Color(background); // If background is a Color
+      this.backgroundImage = null;
+    } catch (e) {
+      this.background = new Color([128, 64, 0]);
+      this.backgroundImage = background;
+    }
+  }
 
-// TODO: Events
+  /** Render
+   * @param  {GBuffer} buffer - GBuffer of screen
+   */
+  render (buffer) {
+    const rgba = this.background.toRgba();
 
-module.exports = cursor;
+    buffer.buffer.map((_, i) => rgba[i % buffer.colorLength]);
+  }
+};
