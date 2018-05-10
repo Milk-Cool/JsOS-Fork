@@ -26,10 +26,18 @@ module.exports = class GBuffer {
    * @param  {number} colorLength - Color length (3 = RGB)
    */
   constructor (width, height, colorLength = 3) {
-    this.buffer = new Uint8ClampedArray(width * height * colorLength);
-    this.width = width;
-    this.height = height;
-    this.color = colorLength;
+    { // set props
+      this.buffer = new Uint8ClampedArray(width * height * colorLength);
+      this.width = width;
+      this.height = height;
+      this.color = colorLength;
+    }
+    { // bind this
+      this.mixColors = this.mixColors.bind(this);
+      this.setPixel = this.setPixel.bind(this);
+      this.validateCoords = this.validateCoords.bind(this);
+      this.render = this.render.bind(this);
+    }
   }
 
   /** Mix two colors

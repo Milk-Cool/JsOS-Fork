@@ -18,9 +18,16 @@
 
 const cursor = require('./cursor');
 const desktop = require('./desktop');
-const buffer = require('./utils/GBuffer');
+const Buffer = require('./utils/GBuffer');
+const buffer = new Buffer(1024, 768, 3);
+
+const { log } = $$.logger;
 
 module.exports = (res) => {
   desktop.render(buffer);
+  log('Desktop inicialized!');
   cursor.render(buffer);
+  log('Cursor inicialized!');
+
+  buffer.render();
 };
