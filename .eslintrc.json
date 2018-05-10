@@ -334,8 +334,18 @@
 		"template-curly-spacing": "error",
 		"yield-star-spacing": [
 			"error",
-			"both"
-		]
+			"never"
+		],
+		"valid-jsdoc": ["error", {
+			"requireReturn": false,
+			"requireReturnType": false,
+			"requireReturnDescription": false
+		}],
+		"vars-on-top": "error",
+		"wrap-regex": "error",
+		"yield-star-spacing": "error",
+		"yoda": "error",
+		"no-console": "error"
 	},
 	"parserOptions": {
 		"ecmaVersion": 6,

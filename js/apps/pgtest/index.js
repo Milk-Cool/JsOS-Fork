@@ -3,104 +3,60 @@
 
 'use strict';
 
-const JsMB = require('../../core/graphics/jsmb-pseudo');
-const UI = require('../../core/tty/pseudo-graphics');
+const JsMB = require('../../core/graphics/jsmb');
 
 const scw = JsMB.screenWidth();
 const sch = JsMB.screenHeight();
 
-let io, resp, kb, window;
+let io, resp, kb;
 
 let page = 0;
-let demonstration = false;
 
-function draw () {
-  window = new UI.Window('Pseudo-GUI Demonstration');
-
-  const startbtn = new UI.Button('Start');
-
-  startbtn.once('click', () => {
-    demonstration = true;
-    page++;
-    sdraw();
-  });
-  window.addButton(startbtn);
-
-  const exitbtn = new UI.Button('Exit', 0x4);
-
-  exitbtn.once('click', exit);
-  window.addButton(exitbtn);
-}
-
-function sdraw () {
-  if (!demonstration) return;
-  JsMB
-    .cls()
-    .setColor(0xF)
-    .setBackColor(0x0);
+function draw() {
+  JsMB.cls();
   switch (page) {
     case 1:
-      JsMB.fillScreen(0x2);
+      JsMB.fillScreen([0, 128, 0]);
       break;
     case 2:
       JsMB
-        .fillScreen(0xA)
-        .setColor(0xC)
+        .fillScreen([0, 255, 0])
+        .setColor([255, 0, 0])
         .drawRect(0, 0, scw, sch);
       break;
     case 3:
       JsMB
-        .fillScreen(0xA)
-        .setColor(0xC)
+        .fillScreen([0, 255, 0])
+        .setColor([255, 0, 0])
         .drawArc(scw / 2, sch / 2, 5);
       break;
     case 4:
       JsMB
-        .fillScreen(0xA)
-        .setColor(0xC)
+        .fillScreen([0, 255, 0])
+        .setColor([255, 0, 0])
         .drawArc(scw / 4, sch / 4, 5)
         .drawArc(3 * scw / 4, sch / 4, 5)
         .drawLine(scw / 4 + 5, 7 * sch / 8, 3 * scw / 4 - 5, 7 * sch / 8);
       break;
     case 5:
       JsMB
-        .drawLine(0, 0, scw, 0)
-        .setColor(0x4)
-        .setBackColor(0xF)
-        .drawString('LOL', scw / 2 - 1, 0);
-      break;
-    case 6:
-      JsMB
-        .fillScreen(0xC)
-        .setColor(0xB)
+        .fillScreen([255, 0, 0])
+        .setColor([0, 255, 255])
         .drawCube(0, 0, scw - 5, sch - 5, 5);
       break;
-    case 7:
+    case 6:
       return exit();
     default:
       throw new (require('errors').WTFError)(`Page ${page} doesn't exist!`);
   }
+
+  return undefined;
 }
 
-function onKeyDown (key) {
-  switch (key.type) {
-    case 'f12':
-      return exit();
-    case 'kpleft':
-      if (!demonstration) return window.prevButton();
-      break;
-    case 'enter':
-      if (!demonstration) return window.pressButton();
-      break;
-    case 'kpright':
-      if (!demonstration) return window.nextButton();
-      break;
-    default:
-      if (!demonstration) return;
-      break;
-  }
+function onKeyDown(key) {
+  if (key.type === 'f12') return exit();
   page++;
-  sdraw();
+  return draw();
 }
 
 function exit () {
@@ -119,8 +75,6 @@ function main (api, res) {
   kb.onKeydown.add(onKeyDown);
   io.setColor('yellow');
   io.writeLine('Press any button to start or F12 to exit!');
-  io.clear();
-  draw();
 }
 
 exports.call = (cmd, args, api, res) => main(api, res);

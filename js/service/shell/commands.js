@@ -80,7 +80,7 @@ const cmds = {
         f.stdio.writeLine('Commands list:');
         // let out = 'Commands list:\n';
         for (const i of processor.getCommands()) {
-        //   out += `${i}: ${processor.getDescription(i)}\n`;
+          //   out += `${i}: ${processor.getDescription(i)}\n`;
           f.stdio.setColor('yellow');
           f.stdio.write(i);
           f.stdio.setColor('white');
@@ -217,8 +217,7 @@ const cmds = {
           }
         }
         log(firstsec);
-
-        return iface.read(firstsec, buf);
+        return iface.read(firstsec, whilebuf);
       })
         .then((fsbuf) => {
           f.stdio.writeLine('  assumming that FS is FAT, header:');
@@ -345,9 +344,9 @@ const cmds = {
   },
   'jsmb': {
     'description': 'Initialize global jsmb variable',
-    'usage':       'jsmb',
-    run (args, f, res) {
-      global.jsmb = require('../../core/graphics/jsmb-pseudo');
+    'usage': 'jsmb',
+    run(args, f, res) {
+      global.jsmb = require('../../core/graphics/jsmb');
       f.stdio.writeLine('JsMobileBasic initialized!');
 
       return res(0);

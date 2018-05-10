@@ -19,7 +19,6 @@
 const packagejson = require('../package.json');
 
 require('module-singleton')(packagejson);
-require('./version');
 
 console.log(`JsOS runtime v${packagejson.version}`);
 console.log('Preparing to load...');
@@ -32,6 +31,14 @@ require('./persistence');
 
 // Load runtime.js core
 const runtime = require('./core');
+
+require('./version');
+
+// Start device drivers
+require('./driver/ps2');
+debug('PS/2 Loaded!');
+require('./driver/bga');
+debug('BGA Loaded!');
 
 // Start services
 require('./service/dhcp-client');
@@ -47,8 +54,6 @@ require('./service/shell/commands');
 // Init app manager
 runtime.appman = require('./service/appman');
 
-// Start device drivers
-require('./driver/ps2');
 require('./driver/virtio');
 require('./driver/ata');
 require('./driver/realtek/rtl8139');
