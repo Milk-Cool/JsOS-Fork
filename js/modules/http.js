@@ -17,7 +17,7 @@ const or = (...objs) => {
 
   for (const obj of objs) {
     if (obj !== undefined && obj !== null) {
-      if (typeof obj == "object") {
+      if (typeof obj === 'object') {
         Object.assign(recursiveObj, obj);
         isRecursive = true;
       }
@@ -29,9 +29,8 @@ const or = (...objs) => {
 
   if (isRecursive) {
     return recursiveObj;
-  } 
-    return null;
-  
+  }
+  return null;
 };
 
 
@@ -129,10 +128,10 @@ class ClientRequest extends stream.Writable {
     const cb = () => {
       super.end(data, encoding, callback);
       this._handle.request(new eshttp.HttpRequest(this._method, this._path, this._headers), (err, response) => {
-          if (this._aborted) return;
-          if (err) return this.emit('error', err);
-          this.emit('response', new IncomingMessage(false, response));
-        });
+        if (this._aborted) return;
+        if (err) return this.emit('error', err);
+        this.emit('response', new IncomingMessage(false, response));
+      });
       this._handle.close();
     };
 
@@ -189,8 +188,8 @@ class ServerResponse extends stream.Writable {
   }
   addTrailers(headers) {
     if (this._handle._parser)
-      {for (const key of Object.keys(headers))
-        this._handle._parser._addTrailer(key, headers[key]);}
+    { for (const key of Object.keys(headers))
+    { this._handle._parser._addTrailer(key, headers[key]); } }
   }
   getHeader(name) {
     return this._handle._headers.get(name);
@@ -220,8 +219,8 @@ class ServerResponse extends stream.Writable {
     this._handle._code = statusCode || this.statusCode;
     if (this._handle._parser) this._handle._parser._phrase = statusMessage || this.statusMessage;
     if (headers)
-      {for (const key of Object.keys(headers))
-        this._handle._headers.set(key, headers[key]);}
+    { for (const key of Object.keys(headers))
+    { this._handle._headers.set(key, headers[key]); } }
   }
 }
 
@@ -262,7 +261,7 @@ exports.request = (opt, cb) => {
   const protocol = or(opt.protocol, 'http:');
 
   if (protocol !== 'http:')
-    {throw new Error(`Protocol "${protocol}" not supported. Expected "http:"`);}
+  { throw new Error(`Protocol "${protocol}" not supported. Expected "http:"`); }
   let ip = or(opt.hostname, opt.host, 'localhost');
   const port = or(opt.port, 80);
   const req = new ClientRequest();
@@ -279,10 +278,10 @@ exports.request = (opt, cb) => {
     req._handle = new eshttp.HttpClient(ip, port);
     req._emitInterals();
     req._handle.request(new eshttp.HttpRequest(req._method, req._path, req._headers), (err, response) => {
-        if (req._aborted) return;
-        if (err) return req.emit('error', err);
-        req.emit('response', new IncomingMessage(false, response));
-      });
+      if (req._aborted) return;
+      if (err) return req.emit('error', err);
+      req.emit('response', new IncomingMessage(false, response));
+    });
   };
 
   if (net.isIP(ip)) {

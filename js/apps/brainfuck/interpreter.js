@@ -128,7 +128,7 @@ class Brainfuck {
     const nodes = [];
     let nextChar;
 
-    while (this._programChars[0] != ']') {
+    while (this._programChars[0] !== ']') {
       nextChar = this._programChars.shift();
       if (typeof nextChar === 'undefined') {
         throw new Error('Missing closing bracket');

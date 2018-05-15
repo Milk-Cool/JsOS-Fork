@@ -82,9 +82,7 @@ function initializeBlockDevice(pciDevice) {
     read(sector, data) {
       return new Promise((resolve, reject) => {
         if (sector > totalSectorCount) {
-          reject(new RangeError(`sector ${sector} out of bounds (max ${totalSectorCount}, non-inclusive)`,
-            ),
-          );
+          reject(new RangeError(`sector ${sector} out of bounds (max ${totalSectorCount}, non-inclusive)`));
 
           return;
         }

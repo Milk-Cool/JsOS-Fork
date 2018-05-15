@@ -22,7 +22,7 @@ const Utils = require('./utils');
 const utils = new Utils(llfs);
 
 const {
- log, success, error, warn 
+  log, success, error, warn,
 } = $$.logger;
 
 module.exports = {
@@ -43,10 +43,9 @@ module.exports = {
 
       // Set is faster than .filter((value, i, arr) => arr.indexOf(value) === i)
       const dirs = new Set(find
-          .filter(findPath => findPath.slice(0, extpath.length + 1) === `${extpath}/`)
-          .map(findPath => findPath.slice(extpath.length + 1))
-          .map(name => name.split('/')[0]),
-      );
+        .filter(findPath => findPath.slice(0, extpath.length + 1) === `${extpath}/`)
+        .map(findPath => findPath.slice(extpath.length + 1))
+        .map(name => name.split('/')[0]));
 
       success('OK!', { from: 'FS->readdir->System', level: 'fs' });
       callback(null, Array.from(dirs).sort());

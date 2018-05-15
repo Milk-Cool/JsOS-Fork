@@ -235,8 +235,7 @@ OCTAVE: ${note.octave}
 
 
 
-`,
-    );
+`);
   }
   // endregion eol
 }

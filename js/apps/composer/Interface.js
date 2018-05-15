@@ -17,8 +17,7 @@ class Interface {
                                  Press F12 to exit\n\n\n\n\n\n\n
 DURATION: ${note.duration}
 OCTAVE: ${note.octave}\n\n\n\n\n\n\n\n\n
-`,
-    );
+`);
   }
 }
 
