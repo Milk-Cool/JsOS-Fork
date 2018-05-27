@@ -35,14 +35,18 @@ class UHCIController {
     this.frnum = null;
     this.frbaseadd = null;
     this.sofmod = null;
-    this.portPorts = null; //   Array
-    this.dmaPool = null; //     DMAPool
-    this.frameList = null; //   DMABuffer
-    this.qhPool = null; //      DMABuffer
+    this.portPorts = null;  //  Array
+    this.dmaPool = null;    //  DMAPool
+    this.frameList = null;  //  DMABuffer
+    this.qhPool = null;     //  DMABuffer
     this.qhPoolInfo = null; //  Array: [QH]
-    this.firstQh = null; //     qhPoolInfo[i] || null
+    this.firstQh = null;    //  qhPoolInfo[i] || null
   }
 
+  /** .
+   * @param  {PciDevice} device - .
+   * @returns {void}
+   */
   init(device) {
     // Initialize the PCI device
     device.setPciCommandFlag(PciDevice.commandFlag.BusMaster);
@@ -143,7 +147,7 @@ class UHCIController {
   }
 
   /**
-   * @param  {QG} qh -
+   * @param  {QH} qh -
    * @returns {void}
    */
   freeQH(qh) {

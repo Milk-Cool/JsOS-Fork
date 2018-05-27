@@ -19,6 +19,17 @@ const typeutils = require('typeutils');
 const isint = require('isint');
 
 class PciDevice {
+  /**
+   * @constructor
+   * @param  {object} opts - .
+   * @param  {uint16} opts.vendorId - .
+   * @param  {uint16} opts.devicaId - .
+   * @param  {uint8} opts.bus - .
+   * @param  {uint8} opts.slot - .
+   * @param  {uint8} opts.func - .
+   * @param  {object} opts.pciAccessor - .
+   * @param  {array} opts.bars - .
+   */
   constructor(opts) {
     assert(typeutils.isObject(opts));
     assert(isint.uint16(opts.vendorId));
@@ -41,13 +52,16 @@ class PciDevice {
 
     this.driver = null;
   }
+
   getBAR(index) {
     assert(Number.isInteger(index) && index >= 0 && index <= 6);
     return this.bars[index] || null;
   }
+
   getIRQ() {
     return this.irq;
   }
+
   setPciCommandFlag(flag) {
     assert(Number.isInteger(flag) && flag >= 0 && flag < 16);
     let t = this.pciAccessor.read(this.pciAccessor.fields().COMMAND);
@@ -55,15 +69,18 @@ class PciDevice {
     t |= (1 << flag) >>> 0;
     this.pciAccessor.write(this.pciAccessor.fields().COMMAND, t);
   }
+
   setDriver(driver) {
     assert(typeutils.isObject(driver));
     assert(typeutils.isFunction(driver.init));
     this.driver = driver;
     driver.init(this);
   }
+
   hasDriver() {
     return this.driver !== null;
   }
+
   static get commandFlag() {
     return {
       'IOSpace': 0,
@@ -79,5 +96,6 @@ class PciDevice {
     };
   }
 }
+
 
 module.exports = PciDevice;
