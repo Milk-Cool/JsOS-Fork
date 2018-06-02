@@ -38,7 +38,7 @@ class ES1370 extends Driver {
     sizePort.write32(0xFFFF);
     fcPort.write32(0xFFFF);
     for (let i = 0; i < 256 * 1024; i += 4) {
-      this.buffer.writeUInt32LE(Math.floor(Math.random() * 0xFFFFFFFF), i);
+      this.buffer.writeUInt32LE(i, i); // Math.floor(Math.random() * 0xFFFFFFFF), i);
     }
     debug('Playback buffer init');
     serialPort.write32(0x0020020C);
