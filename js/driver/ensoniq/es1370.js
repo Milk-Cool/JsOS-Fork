@@ -1,23 +1,28 @@
 /*
  * Copyright (c) 2017 UsernameAK
+ * Copyright (c) 2018 PROPHESSOR
 */
+
+// jsos start --append-qemu="-soundhw es1370"
+
 'use strict';
 
 const PciDevice = require('../../core/pci/pci-device');
 const Buffer = require('buffer').Buffer;
 const Driver = require('..');
+const CONSTANT = require('./constants');
 
 class ES1370 extends Driver {
-  constructor() {
+  constructor () {
     super();
     this.onIRQ = this.onIRQ.bind(this);
   }
 
-  static init(device) {
+  static init (device) {
     return new ES1370().init(device);
   }
 
-  init(device) {
+  init (device) {
     debug('Ensoinq Corp. AudioPCI ES1370 driver loading...');
     this.irq = device.getIRQ();
     device.setPciCommandFlag(PciDevice.commandFlag.BusMaster);
@@ -29,9 +34,10 @@ class ES1370 extends Driver {
     const serialPort = iobar.resource.offsetPort(0x20);
     const cmdPort = iobar.resource.offsetPort(0x0);
     const fcPort = iobar.resource.offsetPort(0x28);
+
     debug('Controller reset');
     this.sampleRate = 48000; // TODO: set rate
-    pagePort.write32(0x0c);
+    pagePort.write32(0x0c); // TODO: Constants
     this.bufferInfo = __SYSCALL.allocDMA();
     this.buffer = new Buffer(this.bufferInfo.buffer);
     addrPort.write32(this.bufferInfo.address);
@@ -45,7 +51,7 @@ class ES1370 extends Driver {
     cmdPort.write32(0x00000020);
   }
 
-  onIRQ() {
+  onIRQ () {
     debug('ES1370 IRQ');
   }
 }
