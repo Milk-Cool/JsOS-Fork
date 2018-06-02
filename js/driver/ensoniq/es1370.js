@@ -14,7 +14,7 @@ const CONSTANT = require('./constants');
 
 class ES1370 extends Driver {
   constructor () {
-    super();
+    super('es1370', 'ensoniq', 'UsernameAK & PROPHESSOR');
     this.onIRQ = this.onIRQ.bind(this);
   }
 
@@ -28,7 +28,7 @@ class ES1370 extends Driver {
     device.setPciCommandFlag(PciDevice.commandFlag.BusMaster);
     device.getIRQ().on(this.onIRQ);
     const iobar = device.bars[0];
-    const pagePort = iobar.resource.offsetPort(0x0c);
+    const pagePort = iobar.resource.offsetPort(CONSTANT.DSP_Write);
     const addrPort = iobar.resource.offsetPort(0x38);
     const sizePort = iobar.resource.offsetPort(0x3c);
     const serialPort = iobar.resource.offsetPort(0x20);
@@ -37,15 +37,17 @@ class ES1370 extends Driver {
 
     debug('Controller reset');
     this.sampleRate = 48000; // TODO: set rate
-    pagePort.write32(0x0c); // TODO: Constants
+    pagePort.write32(CONSTANT.DSP_Write);
     this.bufferInfo = __SYSCALL.allocDMA();
-    this.buffer = new Buffer(this.bufferInfo.buffer);
+    this.buffer = Buffer.from(this.bufferInfo.buffer);
     addrPort.write32(this.bufferInfo.address);
     sizePort.write32(0xFFFF);
     fcPort.write32(0xFFFF);
+
     for (let i = 0; i < 256 * 1024; i += 4) {
       this.buffer.writeUInt32LE(i, i); // Math.floor(Math.random() * 0xFFFFFFFF), i);
     }
+
     debug('Playback buffer init');
     serialPort.write32(0x0020020C);
     cmdPort.write32(0x00000020);

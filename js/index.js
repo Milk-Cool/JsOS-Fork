@@ -52,6 +52,7 @@ require('./driver/ps2');
 require('./driver/virtio');
 require('./driver/ata');
 require('./driver/realtek/rtl8139');
+require('./driver/ensoniq/es1370');
 
 // Set time
 require('./core/cmos-time'); // load cmos
