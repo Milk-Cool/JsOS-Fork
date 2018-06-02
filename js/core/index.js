@@ -16,6 +16,7 @@
 'use strict';
 
 const { allocator } = require('./resources');
+
 require('./polyfill');
 
 const random = require('./random');
@@ -28,6 +29,7 @@ const net = require('./net');
 const stdio = require('./stdio');
 const speaker = require('../driver').load('ibm/pcspeaker'); // require('../driver/ibmpc/pcspeaker');
 const logger = new (require('../modules/logger'))(stdio);
+
 try {
   logger.setLevels(require('../../package.json').logLevels);
 } catch (e) {
@@ -42,7 +44,7 @@ try {
 // const fs = require('./fs');
 
 class Runtime {
-  constructor() {
+  constructor () {
     Object.assign(this, {
       random,
       block,
@@ -56,10 +58,10 @@ class Runtime {
       speaker,
       logger,
       // globalStorage: new Storage,
-      machine: {
-        reboot: __SYSCALL.reboot,
-        shutdown: () => __SYSCALL.acpiEnterSleepState(5),
-        suspend: () => __SYSCALL.acpiEnterSleepState(3),
+      'machine': {
+        'reboot':   __SYSCALL.reboot,
+        'shutdown': () => __SYSCALL.acpiEnterSleepState(5),
+        'suspend':  () => __SYSCALL.acpiEnterSleepState(3),
       },
     });
   }

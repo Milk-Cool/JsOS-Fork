@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const checksum = require('./checksum');
 const ethernet = require('./ethernet');
 const ip4header = require('./ip4-header');
@@ -32,12 +33,13 @@ module.exports = (intf, destIP, viaIP, srcPort, destPort, u8data) => {
     ip4header.minHeaderLength + udpHeader.headerLength + u8data.length);
   udpHeader.write(u8headers, udpOffset, srcPort, destPort, datagramLength);
 
-  const sum = ((destIP.a << 8) | destIP.b) + ((destIP.c << 8) | destIP.d) +
-      ((srcIP.a << 8) | srcIP.b) + ((srcIP.c << 8) | srcIP.d) +
+  const sum = (destIP.a << 8 | destIP.b) + (destIP.c << 8 | destIP.d) +
+      (srcIP.a << 8 | srcIP.b) + (srcIP.c << 8 | srcIP.d) +
       datagramLength + ip4header.PROTOCOL_UDP +
       srcPort + destPort + datagramLength;
 
   const ck = checksum(u8data, 0, u8data.length, sum);
+
   udpHeader.writeChecksum(u8headers, udpOffset, ck);
 
   intf.sendIP4(viaIP || destIP, u8headers, u8data);

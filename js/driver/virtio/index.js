@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const virtioNet = require('./net');
 const virtioBlk = require('./blk');
 const virtioRNG = require('./rng');
@@ -22,7 +23,7 @@ const VIRTIO_SUBSYSTEM_RNG = 4;
 const runtime = require('../../core');
 
 const driver = {
-  init(pciDevice) {
+  init (pciDevice) {
     const subsystemId = pciDevice.subsystem.subsystemId;
 
     if (subsystemId === VIRTIO_SUBSYSTEM_NETWORK) {
@@ -37,10 +38,10 @@ const driver = {
 
     debug(`[virtio] unknown virtio device (subsystem id ${subsystemId})`);
   },
-  reset() {},
+  reset () {},
 };
 
-function testDeviceId(deviceId) {
+function testDeviceId (deviceId) {
   return deviceId >= 0x1000 && deviceId <= 0x103f;
 }
 

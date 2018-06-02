@@ -2,10 +2,11 @@
  * Copyright (c) 2017 PROPHESSOR
  * Based on https://raw.githubusercontent.com/charliesome/jsos/master/kernel/js/kernel/fs.js
  */
+
 'use strict';
 
 class Path {
-  constructor(path) {
+  constructor (path) {
     if (path instanceof Path) {
       return path;
     }
@@ -16,6 +17,7 @@ class Path {
       path = path.substr(0, path.length - 1);
     }
     const parts = path.split('/');
+
     if (parts[0] && parts[0].length !== 0) {
       throw new Error('path provided is not absolute');
     }
@@ -29,48 +31,51 @@ class Path {
   }
 
 
-  toString() {
+  toString () {
     return `/${this.parts.join('/')}`;
   }
 
-  includes(path) {
+  includes (path) {
     path = new Path(path);
     for (let i = 0; i < this.length; i++) {
       if (this.parts[i] !== path.parts[i]) {
         return false;
       }
     }
+
     return true;
   }
 
-  equals(path) {
+  equals (path) {
     path = new Path(path);
     if (this.length !== path.length) {
       return false;
     }
+
     return this.includes(path);
   }
 
-  removePrefix(prefix) {
+  removePrefix (prefix) {
     prefix = new Path(prefix);
     if (!prefix.includes(this)) {
       return null;
     }
     const parts = this.parts.slice(prefix.length);
+
     return new Path(`/${parts.join('/')}`);
   }
 
-  normalize() {
-		// TODO: Write me...
+  normalize () {
+    // TODO: Write me...
   }
 
-  static normalize(/* path */) {
-		// TODO: Write me...
+  static normalize (/* path */) {
+    // TODO: Write me...
   }
 }
 
 class Filesystem {
-  constructor() {
+  constructor () {
     this.mountpoints = [];
 
     this.mount = this.mount.bind(this);
@@ -80,7 +85,7 @@ class Filesystem {
     this.findMountpoint = this.findMountpoint.bind(this);
   }
 
-  mount(path, fs) {
+  mount (path, fs) {
     path = new Path(path);
     if (typeof fs.init === 'function') {
       fs.init();
@@ -91,40 +96,48 @@ class Filesystem {
     });
   }
 
-  unmount(path) {
+  unmount (path) {
     const mountpoint = this.findMountpoint(path);
+
     for (let i = 0; i < this.mountpoints.length; i++) {
       if (this.mountpoints[i] === mountpoint) {
         if (typeof mountpoint.fs.close === 'function') {
           mountpoint.fs.close();
         }
         this.mountpoints.splice(i, 1);
+
         return true;
       }
     }
+
     return false;
   }
 
-  read(path) {
+  read (path) {
     const file = this.find(path);
+
     if (file === null || file.getType() !== 'file') {
       return null;
     }
+
     return file.readAllBytes();
   }
 
-  find(path) {
+  find (path) {
     path = new Path(path);
     const mountpoint = this.findMountpoint(path);
+
     if (mountpoint === null) {
       return null;
     }
+
     return mountpoint.fs.find(path.removePrefix(mountpoint.path).toString());
   }
 
-  findMountpoint(path) {
+  findMountpoint (path) {
     path = new Path(path);
     let bestMatch = null;
+
     for (let i = 0; i < this.mountpoints.length; i++) {
       if (bestMatch === null || this.mountpoints[i].path.length > bestMatch.path.length) {
         if (this.mountpoints[i].path.includes(path)) {
@@ -132,6 +145,7 @@ class Filesystem {
         }
       }
     }
+
     return bestMatch;
   }
 }

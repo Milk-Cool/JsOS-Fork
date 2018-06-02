@@ -13,16 +13,18 @@
 // limitations under the License.
 
 'use strict';
+
 const typeutils = require('typeutils');
 const { SystemError } = require('./errors');
 const fsmod = require('../core/fs');
 
-function makeErrorNotFound(path, op) {
+function makeErrorNotFound (path, op) {
   return new SystemError(`no such file or directory, ${op} '${path}'`, 'ENOENT');
 }
 
-function normalizePath(components) {
+function normalizePath (components) {
   const r = [];
+
   for (const p of components) {
     if (p === '' || p === '.') {
       continue;
@@ -44,13 +46,14 @@ function normalizePath(components) {
 
 // This function assumes current directory '/'. It is not
 // possible to change it.
-function toAbsolutePath(path) {
+function toAbsolutePath (path) {
   if (typeof path !== 'string') {
     return null;
   }
 
   const parts = path.split('/');
   const n = normalizePath(parts);
+
   if (!n) {
     return null;
   }
@@ -58,12 +61,13 @@ function toAbsolutePath(path) {
   return `/${n.join('/')}`;
 }
 
-function readFileImpl(fnName, path, opts) {
+function readFileImpl (fnName, path, opts) {
   if (!typeutils.isString(path)) {
     throw new Error('path is not a string');
   }
 
   let encoding = null;
+
   if (typeutils.isString(opts)) {
     encoding = opts;
   } else if (typeutils.isObject(opts)) {
@@ -71,11 +75,13 @@ function readFileImpl(fnName, path, opts) {
   }
 
   const absolute = toAbsolutePath(path);
+
   if (!absolute) {
     return [makeErrorNotFound(path, fnName), null];
   }
 
   const buf = __SYSCALL.initrdReadFileBuffer(absolute);
+
   if (!buf) {
     return [makeErrorNotFound(path, fnName), null];
   }
@@ -96,11 +102,13 @@ exports.readFileImpl = (path, opts, cb) => {
   }
 
   const [err, buf] = readFileImpl('readFile', path, opts);
+
   setImmediate(() => callback(err, buf));
 };
 
 exports.readFileImplSync = (path, opts) => {
   const [err, buf] = readFileImpl('readFileSync', path, opts);
+
   if (err) {
     throw err;
   }
@@ -108,7 +116,7 @@ exports.readFileImplSync = (path, opts) => {
   return buf;
 };
 exports.readFile = fsmod.readFile;
-exports.readFileSync = (path, data) => console.warn('Not implemented!');//eslint-disable-line
+exports.readFileSync = fsmod.readFileSync;
 
 exports.writeFile = fsmod.writeFile;
 exports.writeFileSync = (path, data) => console.warn('Not implemented!');//eslint-disable-line

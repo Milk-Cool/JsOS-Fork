@@ -15,5 +15,6 @@
 'use strict';
 
 const EventController = require('event-controller');
+
 exports.onKeydown = new EventController();
 exports.onKeyup = new EventController();

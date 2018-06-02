@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const u8view = require('u8-view');
 
 exports.headerLength = 8;
@@ -32,4 +33,4 @@ exports.write = (u8, headerOffset, type, code, headerValue) => {
 };
 
 exports.writeChecksum = (u8, headerOffset, checksum) => u8view.setUint16BE(u8, headerOffset + 2, checksum);
-exports.headerValueEcho = (id, seq) => (((id & 0xffff) << 16) | (seq & 0xffff)) >>> 0;
+exports.headerValueEcho = (id, seq) => ((id & 0xffff) << 16 | seq & 0xffff) >>> 0;

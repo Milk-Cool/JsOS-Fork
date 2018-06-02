@@ -13,5 +13,6 @@
 // limitations under the License.
 
 'use strict';
+
 require('./keyboard');
 require('./mouse');

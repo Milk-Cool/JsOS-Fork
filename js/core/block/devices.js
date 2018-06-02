@@ -19,18 +19,19 @@ const availableBuses = Object.create(null); // not using a Map because the buses
 const availableDevices = [];
 
 module.exports = {
-  registerDevice(device) {
+  registerDevice (device) {
     if (!availableBuses[device.bus]) availableBuses[device.bus] = [];
     const i = availableDevices.push(device) - 1;
+
     device[setNameHandle](`${device.bus}${i}`);
     availableBuses[device.bus].push(device);
 
     console.log(`[block] registered block device ${device.name}`);
   },
-  getDevices() {
+  getDevices () {
     return availableDevices;
   },
-  getBuses() {
+  getBuses () {
     return availableBuses;
   },
 };

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const u8view = require('u8-view');
 const IP4Address = require('./ip4-address');
 const MACAddress = require('./mac-address');
@@ -23,29 +24,29 @@ const PROTOCOL_IP4 = 0x0800;
 exports.OPERATION_REQEUST = 1;
 exports.OPERATION_REPLY = 2;
 
-exports.getSrcMAC = (u8, headerOffset) => (new MACAddress(u8[headerOffset + 8],
-                                                          u8[headerOffset + 9],
-                                                          u8[headerOffset + 10],
-                                                          u8[headerOffset + 11],
-                                                          u8[headerOffset + 12],
-                                                          u8[headerOffset + 13]));
+exports.getSrcMAC = (u8, headerOffset) => new MACAddress(u8[headerOffset + 8],
+  u8[headerOffset + 9],
+  u8[headerOffset + 10],
+  u8[headerOffset + 11],
+  u8[headerOffset + 12],
+  u8[headerOffset + 13]);
 
-exports.getSrcIP = (u8, headerOffset) => (new IP4Address(u8[headerOffset + 14],
-                                                         u8[headerOffset + 15],
-                                                         u8[headerOffset + 16],
-                                                         u8[headerOffset + 17]));
+exports.getSrcIP = (u8, headerOffset) => new IP4Address(u8[headerOffset + 14],
+  u8[headerOffset + 15],
+  u8[headerOffset + 16],
+  u8[headerOffset + 17]);
 
-exports.getTargetMAC = (u8, headerOffset) => (new MACAddress(u8[headerOffset + 18],
-                                                             u8[headerOffset + 19],
-                                                             u8[headerOffset + 20],
-                                                             u8[headerOffset + 21],
-                                                             u8[headerOffset + 22],
-                                                             u8[headerOffset + 23]));
+exports.getTargetMAC = (u8, headerOffset) => new MACAddress(u8[headerOffset + 18],
+  u8[headerOffset + 19],
+  u8[headerOffset + 20],
+  u8[headerOffset + 21],
+  u8[headerOffset + 22],
+  u8[headerOffset + 23]);
 
-exports.getTargetIP = (u8, headerOffset) => (new IP4Address(u8[headerOffset + 24],
-                                                            u8[headerOffset + 25],
-                                                            u8[headerOffset + 26],
-                                                            u8[headerOffset + 27]));
+exports.getTargetIP = (u8, headerOffset) => new IP4Address(u8[headerOffset + 24],
+  u8[headerOffset + 25],
+  u8[headerOffset + 26],
+  u8[headerOffset + 27]);
 
 exports.getOperation = (u8, headerOffset) => u8view.getUint16BE(u8, headerOffset + 6);
 

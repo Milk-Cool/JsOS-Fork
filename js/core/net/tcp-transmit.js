@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const checksum = require('./checksum');
 const ethernet = require('./ethernet');
 const ip4header = require('./ip4-header');
@@ -33,8 +34,8 @@ module.exports = (intf, destIP, viaIP, srcPort, destPort, seqNumber, ackNumber, 
     ip4header.minHeaderLength + tcpHeader.headerLength + dataLength);
   tcpHeader.write(u8headers, tcpOffset, srcPort, destPort, seqNumber, ackNumber, flags, windowSize);
 
-  const sum = ((destIP.a << 8) | destIP.b) + ((destIP.c << 8) | destIP.d) +
-      ((srcIP.a << 8) | srcIP.b) + ((srcIP.c << 8) | srcIP.d) +
+  const sum = (destIP.a << 8 | destIP.b) + (destIP.c << 8 | destIP.d) +
+      (srcIP.a << 8 | srcIP.b) + (srcIP.c << 8 | srcIP.d) +
       datagramLength + ip4header.PROTOCOL_TCP;
 
   const ckHeader = checksum.buffer(u8headers, tcpOffset, tcpHeader.headerLength);

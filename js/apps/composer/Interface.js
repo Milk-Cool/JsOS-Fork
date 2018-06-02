@@ -10,7 +10,7 @@ const io = $$.stdio.defaultStdio;
 // ######################################################################################
 class Interface {
 
-  static render() {
+  static render () {
     io.write(` 
  ##############################################################################
  #                          SpeakPlay (c) PROPHESSOR 2017                     #

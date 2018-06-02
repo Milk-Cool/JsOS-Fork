@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 exports.OPTION_SUBNET_MASK = 1;
 exports.OPTION_ROUTER = 3;
 exports.OPTION_DOMAIN = 6;
@@ -26,15 +27,18 @@ exports.find = (options, id, minLength = 0) => {
       return opt.bytes;
     }
   }
+
   return null;
 };
 
 exports.findAll = (options, id, minLength = 0) => {
   const result = [];
+
   for (const opt of options) {
     if (opt.id === id && opt.bytes.length >= minLength) {
       result.push(opt.bytes);
     }
   }
+
   return result;
 };

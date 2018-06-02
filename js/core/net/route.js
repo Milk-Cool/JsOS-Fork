@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const IP4Address = require('./ip4-address');
 // const interfaces = require('./interfaces');
 const assert = require('assert');
@@ -20,10 +21,10 @@ const bitTwiddle = require('bit-twiddle');
 const table = [];
 
 class Entry {
-  constructor(ip, mask, gateway, intf) {
+  constructor (ip, mask, gateway, intf) {
     assert(ip instanceof IP4Address);
     assert(mask instanceof IP4Address);
-    assert(gateway === null || (gateway instanceof IP4Address));
+    assert(gateway === null || gateway instanceof IP4Address);
 
     this.ip = ip;
     this.mask = mask;
@@ -42,6 +43,7 @@ exports.addDefault = (gateway, intf) => table.push(new Entry(IP4Address.ANY, IP4
 exports.lookup = (destIP, intf) => {
   let result = null;
   let maxMaskBits = 0;
+
   for (const entry of table) {
     if (intf && entry.intf !== intf) {
       continue;

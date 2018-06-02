@@ -24,13 +24,14 @@ let bgcolor = tty.color.BLACK;
 defaultStdio.getColor = () => fgcolor;
 defaultStdio.getBgColor = () => bgcolor;
 
-defaultStdio.onwrite = text => tty.print(text, 1, fgcolor, bgcolor);
+defaultStdio.onwrite = (text) => tty.print(text, 1, fgcolor, bgcolor);
 
 defaultStdio.onclear = tty.clear;
 
 defaultStdio.onsetcolor = (fg) => {
   if (!fg) {
     fgcolor = tty.color.WHITE;
+
     return;
   }
 
@@ -40,17 +41,20 @@ defaultStdio.onsetcolor = (fg) => {
 defaultStdio.onsetbackgroundcolor = (bg) => {
   if (!bg) {
     bgcolor = tty.color.BLACK;
+
     return;
   }
 
   bgcolor = tty.color[String(bg).toUpperCase()];
 };
 
-defaultStdio.onread = cb => tty.read(cb);
+defaultStdio.onmoveto = (x, y) => tty.moveTo(x, y);
 
-defaultStdio.onreadline = cb => tty.readLine(cb);
+defaultStdio.onread = (cb) => tty.read(cb);
 
-defaultStdio.onwriteerror = error => tty.print(error, 1, tty.color.RED);
+defaultStdio.onreadline = (cb) => tty.readLine(cb);
+
+defaultStdio.onwriteerror = (error) => tty.print(error, 1, tty.color.RED);
 
 defaultStdio.print = defaultStdio.onwrite;
 defaultStdio.error = defaultStdio.error;

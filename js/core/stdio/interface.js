@@ -16,52 +16,66 @@
 'use strict';
 
 class StdioInterface {
-  constructor() {
+  constructor () {
     this.onread = () => {};
     this.onwrite = () => {};
     this.onwriteerror = () => {};
     this.onsetcolor = () => {};
     this.onsetbackgroundcolor = () => {};
+    this.onmoveto = () => {};
+
+    this.write = this.write.bind(this);
+    this.writeError = this.writeError.bind(this);
+    this.writeLine = this.writeLine.bind(this);
+    this.setColor = this.setColor.bind(this);
+    this.setBackgroundColor = this.setBackgroundColor.bind(this);
+    this.clear = this.clear.bind(this);
+    this.read = this.read.bind(this);
+    this.readLine = this.readLine.bind(this);
   }
 
-  get color() {
+  get color () {
     return this.getColor();
   }
 
-  get bgcolor() {
+  get bgcolor () {
     return this.getBgColor();
   }
 
   // stdout
-  write(...text) {
+  write (...text) {
     this.onwrite(text.join(' '));
   }
 
-  writeLine(...text) {
+  writeLine (...text) {
     this.onwrite(`${text.join(' ')}\n`);
   }
 
-  setColor(fg) {
+  setColor (fg) {
     this.onsetcolor(fg);
   }
 
-  setBackgroundColor(bg) {
+  setBackgroundColor (bg) {
     this.onsetbackgroundcolor(bg);
   }
 
-  clear() {
+  moveTo (x, y) {
+    this.onmoveto(x, y);
+  }
+
+  clear () {
     this.onclear();
   }
 
   // stdin
-  read(cb) {
+  read (cb) {
     this.onread(cb);
   }
 
-  readLine(cb) {
+  readLine (cb) {
     let text = '';
 
-    function addinput(char) {
+    function addinput (char) {
       if (char !== '\n') {
         text += char;
         this.onread(addinput);
@@ -82,7 +96,7 @@ class StdioInterface {
   }
 
   // stderr
-  writeError(...text) {
+  writeError (...text) {
     this.write('\n');
     if (typeof text[0] === 'string') {
       this.onwriteerror(text.join(' '));

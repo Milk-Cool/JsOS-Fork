@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const u8view = require('u8-view');
 
 exports.getSrcPort = (u8, headerOffset) => u8view.getUint16BE(u8, headerOffset);
@@ -34,6 +35,7 @@ exports.FLAG_URG = 1 << 5; // Urgent
 
 exports.write = (u8, headerOffset, srcPort, destPort, seqNumber, ackNumber, flags, windowSize) => {
   const dataOffsetWords = 5;
+
   u8view.setUint16BE(u8, headerOffset, srcPort);
   u8view.setUint16BE(u8, headerOffset + 2, destPort);
   u8view.setUint32BE(u8, headerOffset + 4, seqNumber);

@@ -14,14 +14,18 @@
 
 'use strict';
 
+/* eslint-disable no-console */
+
 const packagejson = require('../package.json');
+
 require('module-singleton')(packagejson);
 require('./version');
 
 console.log(`JsOS runtime v${packagejson.version}`);
-console.log('Prepare to loading...');
+console.log('Preparing to load...');
 
 const isDebug = packagejson.runtimejs.debug;
+
 global.debug = isDebug ? console.log : () => {};
 
 require('./persistence');
@@ -48,7 +52,6 @@ require('./driver/ps2');
 require('./driver/virtio');
 require('./driver/ata');
 require('./driver/realtek/rtl8139');
-require('./driver/ensoniq/es1370');
 
 // Set time
 require('./core/cmos-time'); // load cmos

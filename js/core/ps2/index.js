@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const driverUtils = require('../driver-utils');
 const assert = require('assert');
 const typeutils = require('typeutils');
@@ -22,9 +23,9 @@ exports.setKeyboardDriver = (driver) => {
   assert(typeutils.isFunction(driver.reset));
 
   driver.init({
-    irq: driverUtils.irq(1),
-    ioPort: driverUtils.ioPort(0x60),
-    statusPort: driverUtils.ioPort(0x64),
+    'irq':        driverUtils.irq(1),
+    'ioPort':     driverUtils.ioPort(0x60),
+    'statusPort': driverUtils.ioPort(0x64),
   });
 };
 
@@ -33,7 +34,7 @@ exports.setMouseDriver = (driver) => {
   assert(typeutils.isFunction(driver.init));
   assert(typeutils.isFunction(driver.reset));
   driver.init({
-    irq: driverUtils.irq(12),
-    ioPorts: [driverUtils.ioPort(0x60), driverUtils.ioPort(0x64)],
+    'irq':     driverUtils.irq(12),
+    'ioPorts': [driverUtils.ioPort(0x60), driverUtils.ioPort(0x64)],
   });
 };

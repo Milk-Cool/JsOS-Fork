@@ -18,7 +18,7 @@ const EventEmitter = require('events');
 const inherits = require('inherits');
 
 // gotta stick with an ES5 class, because readable-stream doesn't use 'new'
-function Stream() {
+function Stream () {
   EventEmitter.call(this);
 }
 inherits(Stream, EventEmitter);

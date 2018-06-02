@@ -13,10 +13,11 @@
 // limitations under the License.
 
 'use strict';
+
 const VirtioDevice = require('./device');
 const runtime = require('../../core');
 
-function initializeRNGDevice(pciDevice) {
+function initializeRNGDevice (pciDevice) {
   const ioSpace = pciDevice.getBAR(0).resource;
   const irq = pciDevice.getIRQ();
   const allocator = runtime.allocator;
@@ -24,6 +25,7 @@ function initializeRNGDevice(pciDevice) {
   const features = {};
 
   const dev = new VirtioDevice('rng', ioSpace, allocator);
+
   dev.setDriverAck();
 
   const driverFeatures = {};
@@ -38,7 +40,7 @@ function initializeRNGDevice(pciDevice) {
   const reqQueue = dev.queueSetup(QUEUE_ID_REQ);
   const cbqueue = [];
 
-  function recvBuffer() {
+  function recvBuffer () {
     if (cbqueue.length === 0) {
       return;
     }

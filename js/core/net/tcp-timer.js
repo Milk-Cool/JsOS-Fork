@@ -13,17 +13,18 @@
 // limitations under the License.
 
 'use strict';
+
 // const tcpSocketState = require('./tcp-socket-state');
 const connections = new Set();
 
-function timeoutHandler() {
+function timeoutHandler () {
   for (const connSocket of connections) {
     connSocket._timerTick();
   }
   initTimeout();
 }
 
-function initTimeout() {
+function initTimeout () {
   setTimeout(timeoutHandler, 500);
 }
 

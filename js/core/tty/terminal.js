@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const keyboard = require('../keyboard');
 const printer = require('./printer');
 const LineEditor = require('./line-editor');
@@ -32,9 +33,10 @@ exports.read = (cb) => {
   }
 
   const editor = new LineEditor();
+
   isReading = true;
 
-  function addinput(keyinfo) {
+  function addinput (keyinfo) {
     switch (keyinfo.type) {
       case 'character':
         printer.print(keyinfo.character);
@@ -64,10 +66,11 @@ exports.readLine = (cb) => {
   }
 
   const editor = new LineEditor();
+
   isReading = true;
 
-  function addinput(keyinfo) {
-    log(`Keyboard->${keyinfo.type}`, { level: 'Keyboard' });
+  function addinput (keyinfo) {
+    log(`Keyboard->${keyinfo.type}`, { 'level': 'Keyboard' });
     switch (keyinfo.type) {
       case 'kpleft':
         editor.moveCursorLeft();
@@ -108,9 +111,11 @@ exports.readLine = (cb) => {
         isReading = false;
         setImmediate(() => {
           let text = editor.getText();
+
           editor.writeHistory(text);
           if (text[0] === '#') {
             let result;
+
             text = text.slice(1);
             try {
               result = `=>${eval(text)}\n`; // eslint-disable-line no-eval
@@ -118,8 +123,10 @@ exports.readLine = (cb) => {
               result = `\nError: ${e}\n`;
             }
             printer.print(result);
+
             return cb('');
           }
+
           return cb(editor.getText());
         });
         keyboard.onKeydown.remove(addinput);

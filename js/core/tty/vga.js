@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const driverUtils = require('../driver-utils');
 
 // Take ownership of the display
@@ -28,42 +29,42 @@ exports.WIDTH = w;
 exports.HEIGHT = h;
 
 const color = {
-  BLACK: 0,
-  BLUE: 1,
-  GREEN: 2,
-  CYAN: 3,
-  RED: 4,
-  MAGENTA: 5,
-  BROWN: 6,
-  LIGHTGRAY: 7,
-  DARKGRAY: 8,
-  LIGHTBLUE: 9,
-  LIGHTGREEN: 10,
-  LIGHTCYAN: 11,
-  LIGHTRED: 12,
-  LIGHTMAGENTA: 13,
-  YELLOW: 14,
-  WHITE: 15,
+  'BLACK':        0,
+  'BLUE':         1,
+  'GREEN':        2,
+  'CYAN':         3,
+  'RED':          4,
+  'MAGENTA':      5,
+  'BROWN':        6,
+  'LIGHTGRAY':    7,
+  'DARKGRAY':     8,
+  'LIGHTBLUE':    9,
+  'LIGHTGREEN':   10,
+  'LIGHTCYAN':    11,
+  'LIGHTRED':     12,
+  'LIGHTMAGENTA': 13,
+  'YELLOW':       14,
+  'WHITE':        15,
 };
 
 exports.color = color;
 
-function getColor(fg, bg) {
-  return (((bg & 0xF) << 4) + (fg & 0xF)) >>> 0;
+function getColor (fg, bg) {
+  return ((bg & 0xF) << 4) + (fg & 0xF) >>> 0;
 }
 
-function setCharOffset(u8, offset, char, fg, bg) {
+function setCharOffset (u8, offset, char, fg, bg) {
   if (offset < 0 || offset >= w * h) {
     throw new Error('vga error: offset is out of bounds');
   }
 
   /* eslint-disable no-param-reassign */
   u8[offset * 2] = char.charCodeAt(0);
-  u8[(offset * 2) + 1] = getColor(fg, bg);
+  u8[offset * 2 + 1] = getColor(fg, bg);
   /* eslint-enable no-param-reassign */
 }
 
-function setCharXY(u8, x, y, char, fg, bg) {
+function setCharXY (u8, x, y, char, fg, bg) {
   if (x < 0 || x >= w) {
     throw new Error('vga error: x is out of bounds');
   }
@@ -72,40 +73,41 @@ function setCharXY(u8, x, y, char, fg, bg) {
     throw new Error('vga error: y is out of bounds');
   }
 
-  const offset = (y * w) + x;
+  const offset = y * w + x;
+
   setCharOffset(u8, offset, char, fg >>> 0, bg >>> 0);
 }
 
-function testColor(value) {
-  if ((value >>> 0) !== value) {
+function testColor (value) {
+  if (value >>> 0 !== value) {
     throw new Error('invalid color value');
   }
 }
 
 class VGABuffer {
-  constructor() {
+  constructor () {
     this.b = new Uint8Array(len * 2);
   }
-  setXY(x, y, char, fg, bg) {
+  setXY (x, y, char, fg, bg) {
     testInstance(this);
     testColor(fg);
     testColor(bg);
     setCharXY(this.b, x, y, String(char), fg, bg);
   }
-  setOffset(offset, char, fg, bg) {
+  setOffset (offset, char, fg, bg) {
     testInstance(this);
     testColor(fg);
     testColor(bg);
     setCharOffset(this.b, offset, String(char), fg, bg);
   }
-  clear(bg) {
+  clear (bg) {
     testInstance(this);
     testColor(bg);
     for (let i = 0; i < w * h; ++i) {
       setCharOffset(this.b, i, ' ', bg, bg);
     }
   }
-  scrollUp(bg) {
+  scrollUp (bg) {
     testInstance(this);
     testColor(bg);
     this.b.set(this.b.subarray(w * 2, w * h * 2));
@@ -113,7 +115,7 @@ class VGABuffer {
       setCharXY(this.b, t, h - 1, ' ', bg, bg);
     }
   }
-  scrollDown(bg) {
+  scrollDown (bg) {
     // testInstance(this);
     // testColor(bg);
     // this.b.set(this.b.subarray(w * 2, w * h * 2));
@@ -124,7 +126,7 @@ class VGABuffer {
   }
 }
 
-function testInstance(obj) {
+function testInstance (obj) {
   if (!(obj instanceof VGABuffer)) {
     throw new Error('VGABuffer instance required');
   }

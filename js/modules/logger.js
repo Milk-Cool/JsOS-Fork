@@ -21,7 +21,7 @@
 let io;
 
 class Logger {
-  constructor(stdio) {
+  constructor (stdio) {
     io = stdio.defaultStdio;
 
     this.log = this.log.bind(this);
@@ -35,11 +35,11 @@ class Logger {
 
     this.levels = [];
     this.callbacks = {
-      log() {},
-      error() {},
-      warn() {},
-      info() {},
-      success() {},
+      log () {},
+      error () {},
+      warn () {},
+      info () {},
+      success () {},
     };
   }
 
@@ -51,8 +51,9 @@ class Logger {
    * @param  {undefined} options - We'll consider that this is {}
    * @param  {any} options - Disable "[LOG]:"
    */
-  log(data, options = {}) {
+  log (data, options = {}) {
     let out = data;
+
     if (typeof options === 'object') { // It can be a number (0)/boolean (false)/string ('') etc.
       if (options.level && this.levels.indexOf(options.level) < 0) return this;
       out = !options.noconvert ? Logger.convert(data) : data;
@@ -71,8 +72,9 @@ class Logger {
    * @param  {undefined} options - We'll consider that this is {}
    * @param  {any} options - Disable "[WARN]:"
    */
-  warn(data, options = {}) {
+  warn (data, options = {}) {
     let out = data;
+
     if (typeof options === 'object') { // It can be a number (0)/boolean (false)/string ('') etc.
       if (options.level && this.levels.indexOf(options.level) < 0) return this;
       if (!options.noconvert) out = Logger.convert(data);
@@ -80,6 +82,7 @@ class Logger {
     }
 
     const tmpcolor = io.color;
+
     io.setColor('yellow');
     io.writeLine(out);
     io.setColor(tmpcolor);
@@ -96,8 +99,9 @@ class Logger {
    * @param  {undefined} options - We'll consider that this is {}
    * @param  {any} options - Disable "[ERROR]:"
    */
-  error(data, options = {}) {
+  error (data, options = {}) {
     let out = data;
+
     if (typeof options === 'object') { // It can be a number (0)/boolean (false)/string ('') etc.
       if (options.level && this.levels.indexOf(options.level) < 0) return this;
       if (!options.noconvert) out = Logger.convert(data);
@@ -105,6 +109,7 @@ class Logger {
     }
 
     const tmpcolor = io.color;
+
     io.setColor('red');
     io.writeLine(out);
     io.setColor(tmpcolor);
@@ -121,8 +126,9 @@ class Logger {
    * @param  {undefined} options - We'll consider that this is {}
    * @param  {any} options - Disable "[INFO]:"
    */
-  info(data, options = {}) {
+  info (data, options = {}) {
     let out = data;
+
     if (typeof options === 'object') { // It can be a number (0)/boolean (false)/string ('') etc.
       if (options.level && this.levels.indexOf(options.level) < 0) return this;
       if (!options.noconvert) out = Logger.convert(data);
@@ -130,6 +136,7 @@ class Logger {
     }
 
     const tmpcolor = io.color;
+
     io.setColor('cyan');
     io.writeLine(out);
     io.setColor(tmpcolor);
@@ -146,8 +153,9 @@ class Logger {
    * @param  {undefined} options - We'll consider that this is {}
    * @param  {any} options - Disable "[SUCCESS]:"
    */
-  success(data, options = {}) {
+  success (data, options = {}) {
     let out = data;
+
     if (typeof options === 'object') { // It can be a number (0)/boolean (false)/string ('') etc.
       if (options.level && this.levels.indexOf(options.level) < 0) return this;
       if (!options.noconvert) out = Logger.convert(data);
@@ -155,6 +163,7 @@ class Logger {
     }
 
     const tmpcolor = io.color;
+
     io.setColor('green');
     io.writeLine(out);
     io.setColor(tmpcolor);
@@ -164,7 +173,7 @@ class Logger {
     return this;
   }
 
-  setLevels(levels) {
+  setLevels (levels) {
     if (levels instanceof Array) {
       this.levels = levels;
     } else if (typeof levels === 'string') {
@@ -176,7 +185,7 @@ class Logger {
     return this;
   }
 
-  removeLevel(level) {
+  removeLevel (level) {
     const idx = this.levels.indexOf(level);
 
     if (idx >= 0) {
@@ -186,7 +195,7 @@ class Logger {
     return this;
   }
 
-  setCallback(event, callback = () => {}) {
+  setCallback (event, callback = () => {}) {
     if (!this.callbacks[event]) return this.log(new Error(`[LOGGER]: Invalid event ${event}`));
     this.callbacks[event] = callback;
 
@@ -194,7 +203,7 @@ class Logger {
   }
 
 
-  static convert(data) {
+  static convert (data) {
     let out = data;
     let error = null;
 
@@ -218,7 +227,7 @@ class Logger {
     return out; // Logger.timestamp(out);
   }
 
-  static timestamp(data) {
+  static timestamp (data) {
     return `[${Date.now()}] ${data}`;
   }
 

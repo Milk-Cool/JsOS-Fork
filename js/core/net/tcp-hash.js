@@ -16,4 +16,4 @@
 
 const pow32 = Math.pow(2, 32);
 
-module.exports = (ip, port) => (pow32 * port) + (((ip.a << 24) | (ip.b << 16) | (ip.c << 8) | ip.d) >>> 0);
+module.exports = (ip, port) => pow32 * port + ((ip.a << 24 | ip.b << 16 | ip.c << 8 | ip.d) >>> 0);

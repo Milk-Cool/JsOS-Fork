@@ -22,11 +22,13 @@ const route = require('./route');
 const netError = require('./net-error');
 const pingListeners = new Map();
 
-function createPingBuffer(size) {
+function createPingBuffer (size) {
   const u8 = new Uint8Array(size);
+
   for (let i = 0; i < size; ++i) {
-    u8[i] = 0x61 + (i % 26);
+    u8[i] = 0x61 + i % 26;
   } // ASCII a-z
+
   return u8;
 }
 
@@ -34,8 +36,8 @@ let nextPingId = 1;
 const defaultPingData = createPingBuffer(56);
 
 class Ping {
-  constructor() {
-    this._pingId = (nextPingId++) & 0xffff;
+  constructor () {
+    this._pingId = nextPingId++ & 0xffff;
     this._nextSeq = 0;
     this._data = defaultPingData;
     this.onreply = null;
@@ -45,18 +47,22 @@ class Ping {
    * Send ICMP echo request (ping) to specified address. Returns request
    * sequence number.
    */
-  send(ip) {
+  send (ip) {
     const destIP = IP4Address.parse(ip);
+
     assertError(destIP instanceof IP4Address, netError.E_IPADDRESS_EXPECTED);
 
     const seq = this._nextSeq++;
+
     if (this._nextSeq > 0xffff) {
       this._nextSeq = 0;
     }
 
     const routingEntry = route.lookup(destIP);
+
     if (!routingEntry) {
       debug(`[ICMP] no route to send ICMP request to ${destIP}`);
+
       return seq;
     }
 
@@ -66,14 +72,16 @@ class Ping {
 
     const intf = routingEntry.intf;
     const viaIP = routingEntry.gateway;
+
     icmpTransmit(intf, destIP, viaIP, icmpHeader.ICMP_TYPE_ECHO_REQUEST, 0,
       icmpHeader.headerValueEcho(this._pingId, seq), this._data);
 
     return seq;
   }
 
-  _receive(srcIP, seq, u8, dataOffset) {
+  _receive (srcIP, seq, u8, dataOffset) {
     const dataLength = u8.length - dataOffset;
+
     if (dataLength !== this._data.length) {
       return;
     }
@@ -92,13 +100,13 @@ class Ping {
   /**
    * Stop listening to echo replies.
    */
-  close() {
+  close () {
     if (pingListeners.has(this._pingId)) {
       pingListeners.delete(this._pingId);
     }
   }
 
-  static _receiveLookup(pingId) {
+  static _receiveLookup (pingId) {
     return pingListeners.get(pingId) || null;
   }
 }

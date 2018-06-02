@@ -15,6 +15,7 @@
 /* eslint-disable new-cap */
 
 'use strict';
+
 const assertError = require('assert-error');
 const typeutils = require('typeutils');
 const IP4Address = require('./ip4-address');
@@ -44,19 +45,19 @@ const { timeNow } = require('../../utils');
 
 const ports = new PortAllocator();
 
-function SEQ_INC(seq, value) {
-  return (seq + (value >>> 0)) >>> 0;
+function SEQ_INC (seq, value) {
+  return seq + (value >>> 0) >>> 0;
 }
 
-function SEQ_OFFSET(a, b) {
-  return (a - b) | 0;
+function SEQ_OFFSET (a, b) {
+  return a - b | 0;
 }
 
 const MSL_TIME = 15000;
 const bufferedLimitHint = 64 * 1024; /* 64 KiB */
 
 class TCPSocket {
-  constructor() {
+  constructor () {
     this._serverSocket = null;
     this._intf = null;
     this._port = 0;
@@ -99,23 +100,23 @@ class TCPSocket {
     ++tcpStat.socketsCreated;
   }
 
-  get bufferedAmount() {
+  get bufferedAmount () {
     return this._bufferedAmount;
   }
-  get remoteAddress() {
+  get remoteAddress () {
     return this._destIP ? this._destIP.toString() : '0.0.0.0';
   }
-  get remotePort() {
+  get remotePort () {
     return this._destPort;
   }
-  get localAddress() {
+  get localAddress () {
     return '0.0.0.0';
   }
-  get localPort() {
+  get localPort () {
     return this._port;
   }
 
-  get readyState() {
+  get readyState () {
     switch (this._state) {
       case STATE_CLOSED:
       case STATE_TIME_WAIT:
@@ -137,8 +138,9 @@ class TCPSocket {
     }
   }
 
-  open(ipOpt, port) {
+  open (ipOpt, port) {
     let ip = ipOpt;
+
     if (typeutils.isString(ip)) {
       ip = IP4Address.parse(ip);
     }
@@ -153,11 +155,12 @@ class TCPSocket {
     tcpTimer.addConnectionSocket(this);
   }
 
-  suspend() {}
-  resume() {}
+  suspend () {}
+  resume () {}
 
-  _listen(portOpt) {
+  _listen (portOpt) {
     let port = portOpt;
+
     if (!port) {
       port = ports.allocEphemeral(this);
     } else {
@@ -172,10 +175,11 @@ class TCPSocket {
     this._connections = new Map();
   }
 
-  _destroy() {
+  _destroy () {
     tcpTimer.removeConnectionSocket(this);
     if (this._serverSocket) {
       const hash = connHash(this._destIP, this._destPort);
+
       this._serverSocket._connections.delete(hash);
     }
     this._transmitQueue = [];
@@ -183,13 +187,13 @@ class TCPSocket {
     this._queueTx = [];
   }
 
-  _transmit(seq, ack, flags, window, u8) {
+  _transmit (seq, ack, flags, window, u8) {
     tcpTransmit(this._intf, this._destIP, this._viaIP,
       this._port, this._destPort,
       seq, ack, flags, window, u8);
   }
 
-  _configure() {
+  _configure () {
     let intf = this._intf || null;
 
     if (this._destIP.isBroadcast()) {
@@ -197,11 +201,13 @@ class TCPSocket {
     }
 
     const routingEntry = route.lookup(this._destIP, intf);
+
     if (!routingEntry) {
       return false;
     }
 
     const viaIP = routingEntry.gateway;
+
     if (!intf) {
       intf = routingEntry.intf;
     }
@@ -215,27 +221,29 @@ class TCPSocket {
 
     this._intf = intf;
     this._viaIP = viaIP;
+
     return true;
   }
 
-  _emitData(u8) {
+  _emitData (u8) {
     setImmediate(() => this.ondata(u8));
   }
 
-  _emitEnd() {
+  _emitEnd () {
     setImmediate(() => this.onend());
   }
 
-  _emitOpen() {
+  _emitOpen () {
     this.onopen();
   }
 
-  _emitClose() {
+  _emitClose () {
     setImmediate(() => this.onclose());
   }
 
-  _sendSYN(isAck) {
+  _sendSYN (isAck) {
     let flags = tcpHeader.FLAG_SYN;
+
     if (isAck) {
       flags |= tcpHeader.FLAG_ACK;
     }
@@ -250,44 +258,48 @@ class TCPSocket {
     this._sendTransmitQueue();
   }
 
-  _incTransmitPosition() {
+  _incTransmitPosition () {
     this._transmitPosition = SEQ_INC(this._transmitPosition, 1);
   }
 
-  _allocTransmitPosition(length) {
+  _allocTransmitPosition (length) {
     const end = SEQ_INC(this._transmitWindowEdge, this._transmitWindowSize);
     const spaceLeft = SEQ_OFFSET(end, this._transmitPosition);
     const spaceReserved = Math.min(spaceLeft, length, 536); /* TODO: move MSS (max segment size, data size) somewhere */
+
     this._transmitPosition = SEQ_INC(this._transmitPosition, spaceReserved);
+
     return spaceReserved;
   }
 
-  _getTransmitPosition() {
+  _getTransmitPosition () {
     return this._transmitPosition;
   }
 
-  _receiveWindowSlideTo(seq) {
+  _receiveWindowSlideTo (seq) {
     this._receiveWindowEdge = seq >>> 0;
   }
 
-  _receiveWindowSlideInc() {
+  _receiveWindowSlideInc () {
     this._receiveWindowEdge = SEQ_INC(this._receiveWindowEdge, 1);
   }
 
-  _receiveWindowIsWithin(seq, edge) {
+  _receiveWindowIsWithin (seq, edge) {
     if (this._receiveWindowSize === 0) {
       return false;
     }
 
     const leftEdge = edge;
     const rightEdge = SEQ_INC(edge, this._receiveWindowSize);
+
     if (leftEdge < rightEdge) {
       return seq >= leftEdge && seq < rightEdge;
     }
+
     return seq >= leftEdge || seq < rightEdge;
   }
 
-  _fillTransmitQueue() {
+  _fillTransmitQueue () {
     let remove = 0;
 
     for (let i = 0, l = this._queueTx.length; i < l; ++i) {
@@ -297,6 +309,7 @@ class TCPSocket {
       if (buf) {
         const length = buf.length;
         const reserved = this._allocTransmitPosition(length);
+
         debug('send at ', position, 'len', reserved);
         if (reserved === 0) {
           break;
@@ -331,10 +344,10 @@ class TCPSocket {
     this._sendTransmitQueue();
   }
 
-  _timerTick() {
+  _timerTick () {
     switch (this._state) {
       case STATE_TIME_WAIT:
-        if (timeNow() > this._timeWaitTime + (2 * MSL_TIME)) {
+        if (timeNow() > this._timeWaitTime + 2 * MSL_TIME) {
           this._state = STATE_CLOSED;
           this._destroy();
         }
@@ -344,6 +357,7 @@ class TCPSocket {
         if (!this._configure()) {
           return;
         }
+
         /* fall through */
       case STATE_ESTABLISHED:
       case STATE_FIN_WAIT_1:
@@ -354,7 +368,7 @@ class TCPSocket {
     }
   }
 
-  _sendTransmitQueue() {
+  _sendTransmitQueue () {
     const now = timeNow();
 
     if (this._transmitQueue.length > 0) {
@@ -368,6 +382,7 @@ class TCPSocket {
 
         if (retransmits > 7) {
           this._resetConnection();
+
           return;
         }
 
@@ -386,7 +401,7 @@ class TCPSocket {
     }
   }
 
-  _cleanupTransmitQueue() {
+  _cleanupTransmitQueue () {
     let deleteCount = 0;
 
     if (this._transmitQueue.length === 0) {
@@ -410,12 +425,12 @@ class TCPSocket {
     }
   }
 
-  _resetConnection() {
+  _resetConnection () {
     this._state = STATE_CLOSED;
     this._destroy();
   }
 
-  send(u8) {
+  send (u8) {
     if (!(u8 instanceof Uint8Array)) {
       throw new Error('argument 0 is not a Uint8Array');
     }
@@ -425,13 +440,14 @@ class TCPSocket {
     this._bufferedAmount += u8.length;
     this._queueTx.push(u8);
     this._fillTransmitQueue();
+
     return this._bufferedAmount < bufferedLimitHint;
   }
 
   /**
    * Close socket for writes but keep receiving new data
    */
-  halfclose() {
+  halfclose () {
     switch (this._state) {
       case STATE_ESTABLISHED:
         this._state = STATE_FIN_WAIT_1;
@@ -451,7 +467,7 @@ class TCPSocket {
    * Close socket for writes and reads (TODO)
    * Close listening socket and all connections
    */
-  close() {
+  close () {
     if (this._state === STATE_LISTEN) {
       this._state = STATE_CLOSED;
       ports.free(this._port);
@@ -460,6 +476,7 @@ class TCPSocket {
       if (this.onclose) {
         this._emitClose();
       }
+
       return;
     }
 
@@ -478,7 +495,7 @@ class TCPSocket {
     this._fillTransmitQueue();
   }
 
-  _insertReceiveQueue(seq, len, u8) {
+  _insertReceiveQueue (seq, len, u8) {
     // Fast path for ordered data
     if (seq === this._receiveWindowEdge) {
       if (u8 && this.ondata) {
@@ -499,18 +516,20 @@ class TCPSocket {
     this._processReceiveQueue();
   }
 
-  _processReceiveQueue() {
+  _processReceiveQueue () {
     let lastAck = this._receiveWindowEdge;
     let removed = 0;
     const queueLength = this._receiveQueue.length;
 
     for (let j = 0; j < queueLength; ++j) {
       let iterRemoved = false;
+
       for (let i = 0; i < queueLength - removed; ++i) {
         const item = this._receiveQueue[i];
         const seqNumber = item[0];
         const length = item[1];
         let removeItem = false;
+
         if (length === 0) {
           continue;
         }
@@ -520,7 +539,8 @@ class TCPSocket {
           removeItem = true;
         } else if (!this._receiveWindowIsWithin(seqNumber, lastAck)) {
           // order [ seqNumber -- lastAck -- seqNumberEnd ]
-          const diff = ((lastAck - seqNumber) >>> 0);
+          const diff = lastAck - seqNumber >>> 0;
+
           if (diff < length) {
             item[0] = SEQ_INC(seqNumber, diff);
             item[1] = length - diff;
@@ -537,6 +557,7 @@ class TCPSocket {
 
           if (i < queueLength - removed) {
             const t = this._receiveQueue[i];
+
             this._receiveQueue[i] = this._receiveQueue[queueLength - removed];
             this._receiveQueue[queueLength - removed] = t;
           }
@@ -554,6 +575,7 @@ class TCPSocket {
     if (removed > 0) {
       while (removed-- > 0) {
         const removedItem = this._receiveQueue.pop();
+
         if (removedItem[2] && this.ondata) {
           this._emitData(removedItem[2]);
         }
@@ -565,7 +587,7 @@ class TCPSocket {
     }
   }
 
-  _isTransmittedUnacked(seq) {
+  _isTransmittedUnacked (seq) {
     const leftEdge = this._transmitWindowEdge;
     const rightEdge = this._transmitPosition;
 
@@ -576,10 +598,11 @@ class TCPSocket {
     if (leftEdge < rightEdge) {
       return seq > leftEdge && seq <= rightEdge;
     }
+
     return seq > leftEdge || seq <= rightEdge;
   }
 
-  _acceptACK(ackNumber, windowSize) {
+  _acceptACK (ackNumber, windowSize) {
     this._transmitWindowSize = windowSize;
     if (this._transmitWindowEdge !== ackNumber && this._isTransmittedUnacked(ackNumber)) {
       this._transmitWindowEdge = ackNumber;
@@ -588,7 +611,7 @@ class TCPSocket {
     }
   }
 
-  _receive(u8, srcIP, srcPort, headerOffset) {
+  _receive (u8, srcIP, srcPort, headerOffset) {
     const dataOffset = headerOffset + tcpHeader.getDataOffset(u8, headerOffset);
     const flags = tcpHeader.getFlags(u8, headerOffset);
     const seqNumber = tcpHeader.getSeqNumber(u8, headerOffset);
@@ -598,31 +621,34 @@ class TCPSocket {
 
     switch (this._state) {
       case STATE_LISTEN:
-        {
-          const hash = connHash(srcIP, srcPort);
-          let socket = this._connections.get(hash);
-          if (socket) {
-            socket._receive(u8, srcIP, srcPort, headerOffset);
-            return;
-          }
-          if (flags & tcpHeader.FLAG_SYN) {
-            socket = new TCPSocket();
-            socket._serverSocket = this;
-            socket._intf = this._intf;
-            socket._viaIP = this._viaIP;
-            socket._receiveWindowSlideTo(seqNumber);
-            socket._receiveWindowSlideInc(); // SYN counts as 1 byte
-            socket._state = STATE_SYN_RECEIVED;
-            socket._destIP = srcIP;
-            socket._destPort = srcPort;
-            socket._port = this._port;
-            socket._sendSYN(true);
-            tcpTimer.addConnectionSocket(socket);
-            this._connections.set(hash, socket);
-            this._onconnect(socket);
-          }
+      {
+        const hash = connHash(srcIP, srcPort);
+        let socket = this._connections.get(hash);
+
+        if (socket) {
+          socket._receive(u8, srcIP, srcPort, headerOffset);
+
           return;
         }
+        if (flags & tcpHeader.FLAG_SYN) {
+          socket = new TCPSocket();
+          socket._serverSocket = this;
+          socket._intf = this._intf;
+          socket._viaIP = this._viaIP;
+          socket._receiveWindowSlideTo(seqNumber);
+          socket._receiveWindowSlideInc(); // SYN counts as 1 byte
+          socket._state = STATE_SYN_RECEIVED;
+          socket._destIP = srcIP;
+          socket._destPort = srcPort;
+          socket._port = this._port;
+          socket._sendSYN(true);
+          tcpTimer.addConnectionSocket(socket);
+          this._connections.set(hash, socket);
+          this._onconnect(socket);
+        }
+
+        return;
+      }
       case STATE_SYN_SENT:
         this._acceptACK(ackNumber, windowSize);
         if (flags & (tcpHeader.FLAG_SYN | tcpHeader.FLAG_ACK)) {
@@ -660,6 +686,7 @@ class TCPSocket {
         if (this._getTransmitPosition() === ackNumber) {
           this._state = STATE_FIN_WAIT_2;
         }
+
         /* fall through */
       case STATE_FIN_WAIT_2:
       case STATE_ESTABLISHED:
@@ -695,7 +722,7 @@ class TCPSocket {
     }
   }
 
-  static lookupReceive(destPort) {
+  static lookupReceive (destPort) {
     return ports.lookup(destPort);
   }
 }

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const assert = require('assert');
 const typeutils = require('typeutils');
 const dnsPacket = require('./dns-packet');
@@ -21,7 +22,7 @@ const runtime = require('../../core');
 const { IP4Address, UDPSocket } = runtime.net;
 
 class DNSClient {
-  constructor(serverIP, serverPort) {
+  constructor (serverIP, serverPort) {
     assert(this instanceof DNSClient);
     if (serverIP) {
       assert(serverIP instanceof IP4Address);
@@ -38,6 +39,7 @@ class DNSClient {
 
     this._socket.onmessage = (ip, port, u8) => {
       const data = dnsPacket.parseResponse(u8);
+
       if (!data) {
         return;
       }
@@ -46,8 +48,10 @@ class DNSClient {
 
       const requests = this._requests;
       const domain = data.hostname;
+
       for (let i = 0; i < requests.length; i++) {
         const req = requests[i];
+
         if (!req) {
           continue;
         }
@@ -65,6 +69,7 @@ class DNSClient {
 
       for (let i = 0; i < requests.length; i++) {
         const req = requests[i];
+
         if (!req) {
           continue;
         }
@@ -78,14 +83,15 @@ class DNSClient {
         }
       }
 
-      this._requests = requests.filter(x => x !== null);
+      this._requests = requests.filter((x) => x !== null);
     }, 1000);
   }
-  _sendQuery(domain, type) {
+  _sendQuery (domain, type) {
     const query = dnsPacket.getQuery(domain, type);
+
     this._socket.send(this._serverIP, this._serverPort, query);
   }
-  resolve(domain, opts, cb) {
+  resolve (domain, opts, cb) {
     assert(this instanceof DNSClient);
     assert(typeutils.isString(domain));
     assert(typeutils.isFunction(cb));
@@ -93,7 +99,7 @@ class DNSClient {
     this._sendQuery(domain, opts.query || 'A');
     this._requests.push({
       domain,
-      retry: 3,
+      'retry': 3,
       opts,
       cb,
     });

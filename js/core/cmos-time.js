@@ -33,13 +33,15 @@ const cmosData = 0x71;
 const port = ports.port(cmosAddress);
 const dataPort = ports.port(cmosData);
 
-function getUpdateInProgressFlag() {
+function getUpdateInProgressFlag () {
   port.write8(0x0A);
-  return (dataPort.read8() & 0x80);
+
+  return dataPort.read8() & 0x80;
 }
 
-function getRTCRegister(reg) {
+function getRTCRegister (reg) {
   port.write8(reg);
+
   return dataPort.read8();
 }
 
@@ -77,21 +79,22 @@ do {
   day = getRTCRegister(0x07);
   month = getRTCRegister(0x08);
   year = getRTCRegister(0x09);
-} while ((lastSecond !== second) || (lastMinute !== minute) || (lastHour !== hour) ||
-  (lastDay !== day) || (lastMonth !== month) || (lastYear !== year));
+} while (lastSecond !== second || lastMinute !== minute || lastHour !== hour ||
+  lastDay !== day || lastMonth !== month || lastYear !== year);
 
 registerB = getRTCRegister(0x0B);
 
 if (!(registerB & 0x04)) {
-  second = (second & 0x0F) + ((second >>> 4) * 10);
-  minute = (minute & 0x0F) + ((minute >>> 4) * 10);
-  hour = ((hour & 0x0F) + (((hour & 0x70) >>> 4) * 10)) | (hour & 0x80);
-  day = (day & 0x0F) + ((day >>> 4) * 10);
-  month = (month & 0x0F) + ((month >>> 4) * 10);
-  year = (year & 0x0F) + ((year >>> 4) * 10);
+  second = (second & 0x0F) + (second >>> 4) * 10;
+  minute = (minute & 0x0F) + (minute >>> 4) * 10;
+  hour = (hour & 0x0F) + ((hour & 0x70) >>> 4) * 10 | hour & 0x80;
+  day = (day & 0x0F) + (day >>> 4) * 10;
+  month = (month & 0x0F) + (month >>> 4) * 10;
+  year = (year & 0x0F) + (year >>> 4) * 10;
 }
 
-year = year + 2000;
+year += 2000;
 
 const utc = Date.UTC(year, month - 1, day, hour, minute, second, 0);
+
 __SYSCALL.setTime(utc * 1000);

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 // const IP4Address = require('./ip4-address');
 const ip4header = require('./ip4-header');
 const ip4fragments = require('./ip4-fragments');
@@ -22,12 +23,13 @@ const interfaces = require('./interfaces');
 
 timers.scheduleTask5s(() => interfaces.forEach(ip4fragments.tick));
 
-function handleReceive(intf, u8, headerOffset) {
+function handleReceive (intf, u8, headerOffset) {
   const headerLength = ip4header.getHeaderLength(u8, headerOffset);
   const protocolId = ip4header.getProtocolId(u8, headerOffset);
   const srcIP = ip4header.getSrcIP(u8, headerOffset);
   const destIP = ip4header.getDestIP(u8, headerOffset);
   const nextOffset = headerOffset + headerLength;
+
   ip4receive(intf, srcIP, destIP, protocolId, u8, nextOffset);
 }
 
@@ -38,6 +40,7 @@ exports.receive = (intf, u8, headerOffset) => {
 
   if (!isMoreFragments && fragmentOffset === 0) {
     handleReceive(intf, u8, headerOffset);
+
     return;
   }
 

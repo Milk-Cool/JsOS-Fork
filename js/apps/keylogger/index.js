@@ -2,12 +2,13 @@
 // By PROPHESSOR
 
 'use strict';
+
 let io,
   kb,
   ms,
   resp;
 
-function main(api, res) {
+function main (api, res) {
   io = api.stdio;
   kb = api.keyboard;
   ms = api.mouse;
@@ -23,8 +24,9 @@ function main(api, res) {
   // return res(0); // 1 = error
 }
 
-function mouselog(key) {
+function mouselog (key) {
   let type;
+
   switch (key) {
     case 0:
       type = 'Left button';
@@ -41,20 +43,23 @@ function mouselog(key) {
   }
 
   io.writeLine(type);
+
   return false;
 }
 
-function keylog(key) {
+function keylog (key) {
   if (key.type === 'f12') return stop();
   io.writeLine(JSON.stringify(key));
+
   return false;
 }
 
-function stop() {
+function stop () {
   io.setColor('yellow');
   io.writeLine('Keylogger stoped');
   kb.onKeydown.remove(keylog);
   ms.onMousedown.remove(mouselog);
+
   return resp(0);
 }
 

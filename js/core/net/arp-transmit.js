@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const ethernet = require('./ethernet');
 const arpHeader = require('./arp-header');
 const MACAddress = require('./mac-address');
@@ -22,6 +23,7 @@ module.exports = (intf, operation, srcMAC, srcIP, targetMAC, targetIP) => {
   const arpOffset = ethOffset + ethernet.headerLength;
   const len = arpOffset + arpHeader.headerLength;
   const u8 = new Uint8Array(len);
+
   ethernet.write(u8, ethOffset, MACAddress.BROADCAST,
     intf.macAddr, ethernet.ETHERTYPE_ARP);
   arpHeader.write(u8, arpOffset, operation, srcMAC, srcIP, targetMAC, targetIP);

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const isaac = require('./isaac-wrapper');
 const EntropySource = require('./entropy-source');
 const sources = require('./sources');
@@ -20,6 +21,7 @@ const sources = require('./sources');
 // Low quality entropy source based on Math.random() seed
 // and isaac CSPRNG
 const source = new EntropySource('js-random');
+
 source.ongetbytes = (u8, cb) => {
   for (let i = 0; i < u8.length; i++) {
     u8[i] = isaac.getByte();

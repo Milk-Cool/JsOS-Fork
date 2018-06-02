@@ -3,6 +3,9 @@
 */
 
 'use strict';
+
+const os = require('os');
+
 let io;
 
 // 38->
@@ -25,7 +28,7 @@ const prefix = [
   '                                       ',
   '                                       ',
   '                                       ',
-  '                                       ',
+  '                                       '
 ];
 
 const root = [
@@ -47,14 +50,14 @@ const root = [
   0,
   0,
   0,
-  0,
+  0
 ];
 
 const suffix = [
-  () => 'User@JsOS',
+  () => `User@${os.hostname()}`,
   () => `JsOS version ${require('../../../package.json').version}`,
-  () => undefined,
-  () => Date.now(),
+  () => `JsOS kernel version ${os.release()} ${os.arch()} (${os.endianness()})`,
+  () => os.uptime(),
   () => PERSISTENCE.Apps._commands.length,
   () => 'JsOS-Shell',
   () => `${80}x${25}`,
@@ -65,14 +68,18 @@ const suffix = [
   () => undefined,
   () => undefined,
   () => undefined,
-  () => undefined,
+  () => `${
+    Number((__SYSCALL.memoryInfo().pmUsed / 1024 / 1024).toFixed(2))
+  }M / ${
+    Number((__SYSCALL.memoryInfo().pmTotal / 1024 / 1024).toFixed(2))
+  }M`,
   0,
   0,
   0,
-  0,
+  0
 ];
 
-function main(cmd, args, api, res) {
+function main (cmd, args, api, res) {
   io = api.stdio;
   for (const i in prefix) { // eslint-disable-line
     io.setColor('cyan');

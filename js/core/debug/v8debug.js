@@ -14,7 +14,7 @@
 
 'use strict';
 
- /* eslint-disable camelcase, no-new-func, new-cap */
+/* eslint-disable camelcase, no-new-func, new-cap */
 // V8 specific code
 const NATIVE_GetOptimizationStatus = new Function('f', 'return %GetOptimizationStatus(f)');
 const NATIVE_OptimizeFunctionOnNextCall = new Function('f', '%OptimizeFunctionOnNextCall(f)');

@@ -9,19 +9,20 @@ const FULL_RX_BUFFER_SIZE = RX_BUFFER_SIZE + 1500;
 const TX_BUFFER_SIZE = 256 * 1024;
 
 class RTL8139 {
-  constructor() {
+  constructor () {
     this.ontransmit = this.ontransmit.bind(this);
     this.onIRQ = this.onIRQ.bind(this);
   }
-  static init(device) {
+  static init (device) {
     return new RTL8139().init(device);
   }
-  init(device) {
+  init (device) {
     // Initialize the PCI device
     this.irq = device.getIRQ();
     device.setPciCommandFlag(PciDevice.commandFlag.BusMaster);
     let iobar;
     let membar;
+
     for (const bar of device.bars) {
       if (!bar) continue;
       if (bar.type === 'io') {
@@ -63,9 +64,11 @@ class RTL8139 {
 
     // Initialize TX buffers
     let offset = FULL_RX_BUFFER_SIZE;
+
     this.txBuffers = [];
     for (let i = 0; i < 4; i++) {
       const buf = {};
+
       buf.address = mempage.address + offset;
       buf.buffer = mempageBuf.slice(offset, offset + TX_BUFFER_SIZE);
       this.txBuffers.push(buf);
@@ -79,7 +82,7 @@ class RTL8139 {
     device.getIRQ().on(this.onIRQ);
 
     // Set WRAP+AB+AM+APM+AAP
-    this.rcr.write32(0xf | (1 << 7));
+    this.rcr.write32(0xf | 1 << 7);
 
     // Reset
     this.resetReceivePointer();
@@ -92,6 +95,7 @@ class RTL8139 {
 
     // Get MAC address
     const macvals = [];
+
     for (let i = 0; i < 6; i++) {
       macvals.push(this.macports[i].read8());
     }
@@ -103,47 +107,54 @@ class RTL8139 {
 
     runtime.net.interfaceAdd(this.intf);
   }
-  nextIter() {
+  nextIter () {
     this.iter++;
     if (this.iter >= 4) {
       this.iter = 0;
     }
+
     return this.iter;
   }
-  ontransmit(u8header, u8data) {
+  ontransmit (u8header, u8data) {
     const iter = this.nextIter();
     let size = u8header.length;
+
     this.txBuffers[iter].buffer.set(u8header);
     if (u8data) {
       size += u8data.length;
       this.txBuffers[iter].buffer.set(u8data, u8header.length);
     }
 
-    const csN = this.iobar.resource.offsetPort(0x10 + (4 * iter));
-    const tsN = this.iobar.resource.offsetPort(0x20 + (4 * iter));
+    const csN = this.iobar.resource.offsetPort(0x10 + 4 * iter);
+    const tsN = this.iobar.resource.offsetPort(0x20 + 4 * iter);
+
     tsN.write32(this.txBuffers[iter].address);
     csN.write32(size & 0xFFF);
   }
-  onreceive() {
+  onreceive () {
     const status = this.rxBuffer.readUInt16LE(this.recvPointer);
+
     if (!(status & 0x1)) {
       this.resetReceivePointer();
+
       return;
     }
     const size = this.rxBuffer.readUInt16LE(this.recvPointer + 2);
     const _buf = this.rxBuffer.slice(this.recvPointer + 4, this.recvPointer + 4 + size);
     const buf = new Buffer(size);
+
     _buf.copy(buf);
     this.intf.receive(buf);
     this.resetReceivePointer();
     if (this.recvPointer >= RX_BUFFER_SIZE) this.recvPointer = 0;
   }
-  resetReceivePointer() {
+  resetReceivePointer () {
     this.recvPointer = this.cbr.read16();
   }
-  onIRQ() {
+  onIRQ () {
     while (true) { // eslint-disable-line
       const isr = this.isr.read16();
+
       if (!isr) break;
       this.isr.write16(isr);
       this.irq.on(this.onIRQ);

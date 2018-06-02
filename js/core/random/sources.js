@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const isaac = require('./isaac-wrapper');
 let defaultSource = null;
 const availableSources = Object.create(null);
@@ -22,7 +23,7 @@ exports.addEntropySource = (source) => {
 
   source.getBytes(new Uint8Array(8), (u8) => {
     isaac.seed(u8);
-    console.log(`[random] using entropy source ${source.getName()}`);
+    debug(`[random] using entropy source ${source.getName()}`);
   });
 
   // Set this source as the default one

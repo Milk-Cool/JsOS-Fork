@@ -15,6 +15,7 @@
 'use strict';
 
 const EventController = require('event-controller');
+
 exports.onMousedown = new EventController();
 exports.onMouseup = new EventController();
 exports.onMousemove = new EventController();

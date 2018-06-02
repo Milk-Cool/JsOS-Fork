@@ -11,7 +11,7 @@ const Cursor = function (obj) {
     if ('char' in obj) this._char = obj.char;
   }
 
-	// Whether the cursor has changed since last set
+  // Whether the cursor has changed since last set
   this.moved = false;
 
   this.on('change', function () {
@@ -45,12 +45,13 @@ Cursor.prototype.col = function (num) {
     this.trigger('change');
   }
 
-	// Just say we are on the last character if it's not available.
+  // Just say we are on the last character if it's not available.
   if ('doc' in this) {
     if (this.doc.line().length < this._char) {
       return this.doc.line().length;
     }
   }
+
   return this._char;
 };
 
@@ -63,10 +64,11 @@ Cursor.prototype.position = function (pos) {
     this.line(pos.line);
     this.char(pos.char);
   }
+
   return {
-    line: this.line(),
-    char: this.char(),
-    col: this.col(),
+    'line': this.line(),
+    'char': this.char(),
+    'col':  this.col(),
   };
 };
 

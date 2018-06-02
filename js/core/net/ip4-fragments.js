@@ -20,11 +20,11 @@ const { timeNow } = require('../../utils');
 const FRAGMENT_QUEUE_MAX_AGE_MS = 30000;
 const FRAGMENT_QUEUE_MAX_COUNT = 100;
 
-function fragmentHash(srcIP, destIP, protocolId, packetId) {
+function fragmentHash (srcIP, destIP, protocolId, packetId) {
   return `${srcIP.toInteger()}-${destIP.toInteger()}-${(packetId + (protocolId << 16))}`;
 }
 
-function dropFragmentQueue(intf, hash) {
+function dropFragmentQueue (intf, hash) {
   return intf.fragments.delete(hash);
 }
 
@@ -40,6 +40,7 @@ exports.addFragment = (intf, u8, headerOffset, fragmentOffset, isMoreFragments) 
 
   let firstFragment = false;
   let fragmentQueue = intf.fragments.get(hash);
+
   if (!fragmentQueue) {
     if (intf.fragments.size >= FRAGMENT_QUEUE_MAX_COUNT) {
       return;
@@ -47,19 +48,21 @@ exports.addFragment = (intf, u8, headerOffset, fragmentOffset, isMoreFragments) 
 
     firstFragment = true;
     fragmentQueue = {
-      receivedLength: 0,
-      totalLength: 0,
-      createdAt: timeNow(),
-      fragments: [],
+      'receivedLength': 0,
+      'totalLength':    0,
+      'createdAt':      timeNow(),
+      'fragments':      [],
     };
   }
 
   const fragmentLength = u8.length - nextOffset;
+
   if (fragmentLength <= 0) {
     return;
   }
 
   const fragmentEnd = fragmentOffset + fragmentLength;
+
   if (fragmentEnd > 0xffff) {
     return;
   }
@@ -68,6 +71,7 @@ exports.addFragment = (intf, u8, headerOffset, fragmentOffset, isMoreFragments) 
   let newOffset = fragmentOffset;
   let newEnd = fragmentEnd;
   let newNextOffset = nextOffset;
+
   for (const fragment of fragmentQueue.fragments) {
     if (!fragment) {
       continue;
@@ -101,8 +105,10 @@ exports.addFragment = (intf, u8, headerOffset, fragmentOffset, isMoreFragments) 
   // By doing this we can avoid splitting big new fragments into
   // smaller chunks
   let removedIndex = -1;
+
   for (let i = 0, l = fragmentQueue.fragments.length; i < l; ++i) {
     const fragment = fragmentQueue.fragments[i];
+
     if (!fragment) {
       continue;
     }
@@ -146,6 +152,7 @@ exports.addFragment = (intf, u8, headerOffset, fragmentOffset, isMoreFragments) 
 
   if (fragmentQueue.totalLength === fragmentQueue.receivedLength) {
     const u8asm = new Uint8Array(fragmentQueue.totalLength);
+
     for (const fragment of fragmentQueue.fragments) {
       if (!fragment) {
         continue;
@@ -155,12 +162,13 @@ exports.addFragment = (intf, u8, headerOffset, fragmentOffset, isMoreFragments) 
       const itemLength = fragment[1];
       const itemNextOffset = fragment[2];
       const itemBuffer = fragment[3];
+
       u8asm.set(itemBuffer.subarray(itemNextOffset, itemNextOffset + itemLength), itemOffset);
     }
 
     dropFragmentQueue(intf, hash);
     ip4receive(intf, srcIP, destIP, protocolId, u8asm, 0);
-    return;
+
   }
 };
 
@@ -175,6 +183,7 @@ exports.tick = (intf) => {
   for (const pair of intf.fragments) {
     const hash = pair[0];
     const fragmentQueue = pair[1];
+
     if (fragmentQueue.createdAt + FRAGMENT_QUEUE_MAX_AGE_MS <= time) {
       dropFragmentQueue(intf, hash);
     }

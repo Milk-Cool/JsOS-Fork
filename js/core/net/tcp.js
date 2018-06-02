@@ -13,13 +13,14 @@
 // limitations under the License.
 
 'use strict';
+
 const tcpHeader = require('./tcp-header');
 const TCPSocket = require('./tcp-socket');
 const tcpSocketState = require('./tcp-socket-state');
 const connHash = require('./tcp-hash');
 const STATE_LISTEN = tcpSocketState.STATE_LISTEN;
 
-function connectionSocket(socket, srcIP, srcPort) {
+function connectionSocket (socket, srcIP, srcPort) {
   return socket._connections.get(connHash(srcIP, srcPort)) || socket;
 }
 

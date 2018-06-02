@@ -22,17 +22,18 @@ const { memoryBarrier } = require('../../../core/atomic');
 const SIZEOF_UINT16 = 2;
 
 class VRing {
-  constructor(mem, byteOffset, ringSize) {
-    assert(ringSize !== 0 && (ringSize & (ringSize - 1)) === 0, `invalid ringSize = ${ringSize}`);
+  constructor (mem, byteOffset, ringSize) {
+    assert(ringSize !== 0 && (ringSize & ringSize - 1) === 0, `invalid ringSize = ${ringSize}`);
 
-    function align(value) {
-      return ((value + 4095) & ~4095) >>> 0;
+    function align (value) {
+      return (value + 4095 & ~4095) >>> 0;
     }
 
     const baseAddress = mem.address + byteOffset;
     const offsetAvailableRing = DescriptorTable.getDescriptorSizeBytes() * ringSize;
-    const offsetUsedRing = align(offsetAvailableRing + (SIZEOF_UINT16 * (3 + ringSize)));
+    const offsetUsedRing = align(offsetAvailableRing + SIZEOF_UINT16 * (3 + ringSize));
     const ringSizeBytes = offsetUsedRing + align(UsedRing.getElementSize() * ringSize);
+
     this.ringSize = ringSize;
     this.address = baseAddress;
     this.size = ringSizeBytes;
@@ -43,7 +44,7 @@ class VRing {
     this.availableRing.setEventIdx(this.usedRing.lastUsedIndex);
     this.availableRing.enableInterrupts();
   }
-  fetchBuffers(fn) {
+  fetchBuffers (fn) {
     let count = 0;
 
     for (;;) {
@@ -53,6 +54,7 @@ class VRing {
 
       for (;;) {
         const u8 = this.getBuffer();
+
         if (u8 === null) {
           break;
         }
@@ -76,6 +78,7 @@ class VRing {
 
     return count;
   }
+
   /**
    * Supply buffers to the device
    *
@@ -83,7 +86,7 @@ class VRing {
    * @param isWriteOnly {bool} R/W buffers flag
    * @param isWriteOnlyArray {array} optional array of 'isWriteOnly's, one for each buffer
    */
-  placeBuffers(buffers, isWriteOnly, isWriteOnlyArray) {
+  placeBuffers (buffers, isWriteOnly, isWriteOnlyArray) {
     if (this.suppressInterrupts) {
       this.fetchBuffers(null);
     }
@@ -92,8 +95,10 @@ class VRing {
     // as its backing store
     const pageSplitBuffers = [];
     const lengths = [];
+
     for (const u8 of buffers) {
       const addr = __SYSCALL.bufferAddress(u8);
+
       if (addr[3] === 0) {
         pageSplitBuffers.push(u8);
         lengths.push(addr[0]);
@@ -108,9 +113,16 @@ class VRing {
       }
     }
 
-    const first = this.descriptorTable.placeBuffers(pageSplitBuffers, lengths, isWriteOnly, isWriteOnlyArray);
+    const first = this.descriptorTable.placeBuffers(
+      pageSplitBuffers,
+      lengths,
+      isWriteOnly,
+      isWriteOnlyArray
+    );
+
     if (first < 0) {
       debug('virtio: no descriptors\n');
+
       return false;
     }
 
@@ -120,15 +132,18 @@ class VRing {
     memoryBarrier();
 
     this.availableRing.placeDescriptor(first);
+
     return true;
   }
-  getBuffer() {
+  getBuffer () {
     const hasUnprocessed = this.usedRing.hasUnprocessedBuffers();
+
     if (!hasUnprocessed) {
       return null;
     }
 
     const used = this.usedRing.getUsedDescriptor();
+
     if (used === null) {
       return null;
     }
@@ -145,18 +160,20 @@ class VRing {
       console.log('used.descriptor id ', descriptorId);
       console.log('used.len ', len);
       console.log('last used index ', this.usedRing.lastUsedIndex);
+
       return null;
     }
 
     return buffer.subarray(0, len);
   }
-  isNotificationNeeded() {
+  isNotificationNeeded () {
     // Barrier to make sure we've updated index before
     // checking notifications flag
     memoryBarrier();
+
     return this.usedRing.isNotificationNeeded();
   }
-  suppressUsedBuffers() {
+  suppressUsedBuffers () {
     this.availableRing.disableInterrupts();
     this.suppressInterrupts = true;
   }

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const MACAddress = require('./mac-address');
 const Interface = require('./interface');
 const IP4Address = require('./ip4-address');
@@ -21,6 +22,7 @@ const route = require('./route');
 const intf = new Interface(MACAddress.ZERO);
 const ip = new IP4Address(127, 0, 0, 1);
 const mask = new IP4Address(255, 0, 0, 0);
+
 intf.disableArp();
 intf.setName('loopback');
 intf.configure(ip, mask);
@@ -29,6 +31,7 @@ intf.ontransmit = (u8headers, u8data) => {
   setTimeout(() => {
     if (u8data) {
       const u8 = new Uint8Array(u8headers.length + u8data.length);
+
       u8.set(u8headers, 0);
       u8.set(u8data, u8headers.length);
       intf.receive(u8);
@@ -39,6 +42,7 @@ intf.ontransmit = (u8headers, u8data) => {
 };
 
 const subnet = ip.and(mask);
+
 route.addSubnet(subnet, mask, null, intf);
 
 module.exports = intf;

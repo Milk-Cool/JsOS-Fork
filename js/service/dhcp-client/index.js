@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const dhcpPacket = require('./dhcp-packet');
 const dhcpOptions = require('./dhcp-options');
 const runtime = require('../../core');
@@ -24,37 +25,40 @@ const STATE_REQUEST_SENT = 2;
 const STATE_ACK_RECEIVED = 2;
 // const STATE_ERROR = 3;
 
-function sendPacket(socket, srcMAC, type, serverIP, yourIP) {
+function sendPacket (socket, srcMAC, type, serverIP, yourIP) {
   // Request info option
   const opt55 = {
-    id: 55,
-    bytes: [
+    'id':    55,
+    'bytes': [
       1, // subnet
       3, // router
-      6, // dns
+      6 // dns
     ],
   };
 
   let options;
+
   if (serverIP && yourIP) {
     const opt54 = {
-      id: 54,
-      bytes: [serverIP.a, serverIP.b, serverIP.c, serverIP.d],
+      'id':    54,
+      'bytes': [serverIP.a, serverIP.b, serverIP.c, serverIP.d],
     };
     const opt50 = {
-      id: 50,
-      bytes: [yourIP.a, yourIP.b, yourIP.c, yourIP.d],
+      'id':    50,
+      'bytes': [yourIP.a, yourIP.b, yourIP.c, yourIP.d],
     };
+
     options = [opt55, opt54, opt50];
   } else {
     options = [opt55];
   }
 
   const u8 = dhcpPacket.create(type, srcMAC, options);
+
   socket.send(IP4Address.BROADCAST, 67, u8);
 }
 
-function checkPacket(u8) {
+function checkPacket (u8) {
   const op = dhcpPacket.getOperation(u8);
 
   if (op !== dhcpPacket.OPERATION_RESPONSE) {
@@ -67,8 +71,9 @@ function checkPacket(u8) {
   return true;
 }
 
-function optionToIP(options, id) {
+function optionToIP (options, id) {
   const option = dhcpOptions.find(options, id, 4);
+
   if (!option) {
     return IP4Address.ANY;
   }
@@ -76,9 +81,10 @@ function optionToIP(options, id) {
   return new IP4Address(option[0], option[1], option[2], option[3]);
 }
 
-function optionToIPsArray(options, id) {
+function optionToIPsArray (options, id) {
   const selected = dhcpOptions.findAll(options, id, 4);
   const result = [];
+
   for (const sel of selected) {
     result.push(new IP4Address(sel[0], sel[1], sel[2], sel[3]));
   }
@@ -86,13 +92,14 @@ function optionToIPsArray(options, id) {
   return result;
 }
 
-function dhcpConfigure(intf, cb) {
+function dhcpConfigure (intf, cb) {
   const macAddress = intf.getMACAddress();
   const socket = new runtime.net.UDPSocket();
   let clientState = STATE_IDLE;
 
-  function handleOffer(serverIP, yourIP, options) {
+  function handleOffer (serverIP, yourIP, options) {
     let serverId = optionToIP(options, dhcpOptions.OPTION_SERVER_ID);
+
     if (serverId.isAny()) {
       serverId = serverIP;
     }
@@ -101,18 +108,18 @@ function dhcpConfigure(intf, cb) {
     clientState = STATE_REQUEST_SENT;
   }
 
-  function handleAck(serverIP, yourIP, options) {
+  function handleAck (serverIP, yourIP, options) {
     clientState = STATE_ACK_RECEIVED;
 
     return cb({
-      ip: yourIP,
-      mask: optionToIP(options, dhcpOptions.OPTION_SUBNET_MASK),
-      routers: optionToIPsArray(options, dhcpOptions.OPTION_ROUTER),
-      dns: optionToIPsArray(options, dhcpOptions.OPTION_DOMAIN),
+      'ip':      yourIP,
+      'mask':    optionToIP(options, dhcpOptions.OPTION_SUBNET_MASK),
+      'routers': optionToIPsArray(options, dhcpOptions.OPTION_ROUTER),
+      'dns':     optionToIPsArray(options, dhcpOptions.OPTION_DOMAIN),
     });
   }
 
-  function parseMessage(serverIP, u8) {
+  function parseMessage (serverIP, u8) {
     if (!checkPacket(u8)) {
       return;
     }
@@ -127,20 +134,21 @@ function dhcpConfigure(intf, cb) {
     const messageType = messageTypeOption[0];
     const yourIP = dhcpPacket.getYourIP(u8);
 
-  // debug('GOT response', messageType, JSON.stringify(options));
+    // debug('GOT response', messageType, JSON.stringify(options));
 
     if (clientState === STATE_DISCOVER_SENT && messageType === dhcpPacket.packetType.OFFER) {
       handleOffer(serverIP, yourIP, options);
+
       return;
     }
 
     if (messageType === dhcpPacket.packetType.ACK) {
       handleAck(serverIP, yourIP, options);
-      return;
+
     }
   }
 
-/* function err(e) {
+  /* function err(e) {
   clientState = STATE_ERROR;
   debug(e.stack);
 }; */
@@ -163,6 +171,7 @@ runtime.net.onInterfaceAdded.add((intf) => {
     intf.configure(config.ip, config.mask);
 
     const subnet = config.ip.and(config.mask);
+
     runtime.net.route.addSubnet(subnet, config.mask, null, intf);
     runtime.net.route.addDefault(config.routers[0], intf);
     intf.setNetworkEnabled(true);

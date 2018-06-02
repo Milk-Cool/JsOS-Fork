@@ -14,8 +14,10 @@
 
 'use strict';
 
+/* eslint-disable no-console */
+
 if (!global.__SYSCALL) {
-  throw new Error('error: this program requires runtime.js environment');
+  throw new Error('error: this program requires jsos environment');
 }
 
 const requiredKernelVersion = require('../runtimecorelib.json').kernelVersion;

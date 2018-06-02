@@ -13,11 +13,13 @@
 // limitations under the License.
 
 'use strict';
+
 const isaac = require('./isaac-wrapper');
 const EntropySource = require('./entropy-source');
 const sources = require('./sources');
 const typeutils = require('typeutils');
 const getDefaultSource = sources.getDefaultSource;
+
 require('./js-random-source');
 
 exports.EntropySource = EntropySource;
@@ -35,6 +37,7 @@ exports.addEntropySource = sources.addEntropySource;
  */
 exports.getTrueRandomValues = (value, cb) => {
   let u8 = null;
+
   if (typeutils.isNumber(value)) {
     u8 = new Uint8Array(value);
   }
@@ -54,6 +57,7 @@ exports.getTrueRandomValues = (value, cb) => {
   } // eslint-disable-line max-len
 
   const defaultSource = getDefaultSource();
+
   if (!defaultSource) {
     throw new Error('getTrueRandomValues: no entropy source available');
   }
@@ -72,6 +76,7 @@ exports.getTrueRandomValues = (value, cb) => {
  */
 exports.getRandomValues = (value) => {
   let u8 = null;
+
   if (typeutils.isNumber(value)) {
     u8 = new Uint8Array(value);
   }

@@ -14,6 +14,7 @@
 // limitations under the License.
 
 'use strict';
+
 /* eslint-disable no-alert */
 
 const typeutils = require('typeutils');
@@ -31,8 +32,14 @@ exports.setCommand = (name, cb) => {
 };
 
 exports.getCommands = () => commands.keys();
-exports.getDescription = cmd => commands.has(cmd) ? commands.get(cmd).description : "Command doesn't exist";
-exports.getUsage = cmd => commands.has(cmd) ? commands.get(cmd).usage : "Command doesn't exist";
+
+exports.getDescription = (cmd) => commands.has(cmd)
+  ? commands.get(cmd).description
+  : 'Command doesn\'t exist';
+
+exports.getUsage = (cmd) => commands.has(cmd)
+  ? commands.get(cmd).usage
+  : 'Command doesn\'t exist';
 
 exports.runCommand = (name, args, done) => {
   let opts = {};
@@ -47,15 +54,21 @@ exports.runCommand = (name, args, done) => {
   }
 
   const stringargs = opts.args.join(' ');
+
   opts.stdio = opts.stdio || runtime.stdio.defaultStdio;
-  commands.get(name).run(stringargs, {
-    stdio: opts.stdio,
-    keyboard,
-    mouse,
-  }, done);
+  try {
+    commands.get(name).run(stringargs, {
+      'stdio': opts.stdio,
+      keyboard,
+      mouse,
+    }, done);
+  } catch (e) {
+    new (require('errors').TerminalError)(`Command ${name} crashed!`);
+    debug(e);
+  }
 };
 
-function prompt() {
+function prompt () {
   stdio.setColor('yellow');
   stdio.write('$');
   stdio.setColor('white');
@@ -65,6 +78,7 @@ function prompt() {
     let args = '';
 
     const split = text.indexOf(' ');
+
     if (split >= 0) {
       name = text.slice(0, split);
       args = text.slice(split);
@@ -79,6 +93,7 @@ function prompt() {
     if (commands.has(name)) {
       return exports.runCommand(name, args.substr(1).split(' '), (rescode) => {
         let printx = false;
+
         stdio.write('\n');
 
         // Since 0 == false and other numbers == true, just check for true.

@@ -21,7 +21,7 @@ const INDEX_IDX = 1;
 const VRING_USED_F_NO_NOTIFY = 1;
 
 class UsedRing {
-  constructor(buffer, byteOffset, ringSize) {
+  constructor (buffer, byteOffset, ringSize) {
     this.ringSize = ringSize;
     this.ringData = new Uint16Array(buffer, byteOffset, 2);
     this.ringElements = new Uint32Array(buffer, byteOffset + OFFSET_BYTES_RING, ringSize * 2);
@@ -29,47 +29,50 @@ class UsedRing {
     this.ringData[INDEX_IDX] = 0;
   }
 
-  static getElementSize() {
+  static getElementSize () {
     return ELEMENT_SIZE;
   }
 
-  readElement(index) {
+  readElement (index) {
     return {
-      id: this.ringElements[index * 2],
-      len: this.ringElements[(index * 2) + 1],
+      'id':  this.ringElements[index * 2],
+      'len': this.ringElements[index * 2 + 1],
     };
   }
 
-  readIdx() {
+  readIdx () {
     return this.ringData[INDEX_IDX];
   }
 
-  placeDescriptorAsDevice(index, bufferLength) {
-    const used = (this.readIdx() & (this.ringSize - 1)) >>> 0;
+  placeDescriptorAsDevice (index, bufferLength) {
+    const used = (this.readIdx() & this.ringSize - 1) >>> 0;
+
     this.ringElements[index * 2] = used;
-    this.ringElements[(index * 2) + 1] = bufferLength;
+    this.ringElements[index * 2 + 1] = bufferLength;
     ++this.ringData[INDEX_IDX];
   }
 
-  hasUnprocessedBuffers() {
+  hasUnprocessedBuffers () {
     return this.lastUsedIndex !== this.readIdx();
   }
 
-  getUsedDescriptor() {
-    const last = (this.lastUsedIndex & (this.ringSize - 1)) >>> 0;
+  getUsedDescriptor () {
+    const last = (this.lastUsedIndex & this.ringSize - 1) >>> 0;
     const descriptorData = this.readElement(last);
-    this.lastUsedIndex = (this.lastUsedIndex + 1) & 0xffff;
+
+    this.lastUsedIndex = this.lastUsedIndex + 1 & 0xffff;
+
     return descriptorData;
   }
 
-  isNotificationNeeded() {
+  isNotificationNeeded () {
     return !(this.ringData[INDEX_FLAGS] & VRING_USED_F_NO_NOTIFY);
   }
 
-  printDebug() {
+  printDebug () {
     console.log('USED RING:');
-    console.log(`  idx = ${this.readIdx()}, wrapped ${this.readIdx() & (this.ringSize - 1)}`);
-    console.log(`  last_used_index = ${this.lastUsedIndex}, wrapped ${this.lastUsedIndex & (this.ringSize - 1)}`); // eslint-disable-line max-len
+    console.log(`  idx = ${this.readIdx()}, wrapped ${this.readIdx() & this.ringSize - 1}`);
+    console.log(`  last_used_index = ${this.lastUsedIndex}, wrapped ${this.lastUsedIndex & this.ringSize - 1}`); // eslint-disable-line max-len
     console.log(`  has_unproc_buffers = ${this.hasUnprocessedBuffers()}`);
     console.log(`  notif_needed = ${this.isNotificationNeeded()}`);
   }

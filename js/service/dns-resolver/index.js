@@ -13,5 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const DNSClient = require('../../component/dns-client');
+
 module.exports = new DNSClient();

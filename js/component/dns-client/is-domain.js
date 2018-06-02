@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const typeutils = require('typeutils');
 const domainRegex = /^[a-z0-9.-]+$/;
 
@@ -30,6 +31,7 @@ module.exports = (domain) => {
   }
 
   const labels = domain.split('.');
+
   for (const label of labels) {
     if (label.length < 1 || label.length > 63) {
       return false;

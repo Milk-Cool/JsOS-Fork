@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+
 const u8view = require('u8-view');
 const { IP4Address } = require('../../core').net;
 
@@ -23,23 +24,25 @@ const OPTIONS_OFFSET = 28 + 16 + 192;
 const magicCookie = 0x63825363;
 
 exports.packetType = {
-  DISCOVER: 1,
-  OFFER: 2,
-  REQUEST: 3,
-  DECLINE: 4,
-  ACK: 5,
-  NAK: 6,
-  RELEASE: 7,
-  INFORM: 8,
+  'DISCOVER': 1,
+  'OFFER':    2,
+  'REQUEST':  3,
+  'DECLINE':  4,
+  'ACK':      5,
+  'NAK':      6,
+  'RELEASE':  7,
+  'INFORM':   8,
 };
 
 exports.create = (type, srcMAC, options = []) => {
   let optionsLength = 8; // cookie (4b), type (3b) and 0xff (1b)
+
   for (const opt of options) {
     optionsLength += opt.bytes.length + 2;
   } // id (1b) and len (1b)
 
   const u8 = new Uint8Array(OPTIONS_OFFSET + optionsLength);
+
   u8[0] = OPERATION_REQUEST; // request
   u8[1] = 1; // over ethernet
   u8[2] = 6; // hw address 6 bytes
@@ -76,17 +79,19 @@ exports.create = (type, srcMAC, options = []) => {
   }
 
   u8[optionsOffset] = 255; // end of option list
+
   return u8;
 };
 
-exports.getOperation = u8 => u8[0];
-exports.getRequestId = u8 => u8view.getUint32BE(u8, 4);
-exports.getYourIP = u8 => new IP4Address(u8[16], u8[17], u8[18], u8[19]);
-exports.getServerIP = u8 => new IP4Address(u8[20], u8[21], u8[22], u8[23]);
-exports.isValidMagicCookie = u8 => magicCookie === u8view.getUint32BE(u8, OPTIONS_OFFSET);
+exports.getOperation = (u8) => u8[0];
+exports.getRequestId = (u8) => u8view.getUint32BE(u8, 4);
+exports.getYourIP = (u8) => new IP4Address(u8[16], u8[17], u8[18], u8[19]);
+exports.getServerIP = (u8) => new IP4Address(u8[20], u8[21], u8[22], u8[23]);
+exports.isValidMagicCookie = (u8) => magicCookie === u8view.getUint32BE(u8, OPTIONS_OFFSET);
 
 exports.getOptions = (u8) => {
   const options = [];
+
   for (let i = OPTIONS_OFFSET + 4; i < u8.length; ++i) {
     const optId = u8[i++];
     const optLen = u8[i++];
@@ -99,12 +104,13 @@ exports.getOptions = (u8) => {
     }
 
     const bytes = [];
+
     for (let j = 0; j < optLen; ++j) {
       bytes.push(u8[i++]);
     }
 
     options.push({
-      id: optId,
+      'id': optId,
       bytes,
     });
 

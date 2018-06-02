@@ -15,38 +15,38 @@
 'use strict';
 
 class IP4Address {
-  constructor(a, b, c, d) {
+  constructor (a, b, c, d) {
     this.a = (a & 0xff) >>> 0;
     this.b = (b & 0xff) >>> 0;
     this.c = (c & 0xff) >>> 0;
     this.d = (d & 0xff) >>> 0;
   }
-  toString() {
+  toString () {
     return `${this.a}.${this.b}.${this.c}.${this.d}`;
   }
-  toInteger() {
-    return ((this.a << 24) | (this.b << 16) | (this.c << 8) | this.d) >>> 0;
+  toInteger () {
+    return (this.a << 24 | this.b << 16 | this.c << 8 | this.d) >>> 0;
   }
-  equals(that) {
+  equals (that) {
     return this.a === that.a && this.b === that.b &&
       this.c === that.c && this.d === that.d;
   }
-  and(that) {
+  and (that) {
     return new IP4Address(this.a & that.a, this.b & that.b,
       this.c & that.c, this.d & that.d);
   }
-  hash() {
-    return (this.a | (this.b << 8) | (this.c << 16) | (this.d << 24)) >>> 0;
+  hash () {
+    return (this.a | this.b << 8 | this.c << 16 | this.d << 24) >>> 0;
   }
-  isBroadcast() {
+  isBroadcast () {
     return this.a === 255 && this.b === 255 &&
       this.c === 255 && this.d === 255;
   }
-  isAny() {
+  isAny () {
     return this.a === 0 && this.b === 0 &&
       this.c === 0 && this.d === 0;
   }
-  static parse(str) {
+  static parse (str) {
     if (str instanceof IP4Address) {
       return str;
     }
@@ -55,14 +55,17 @@ class IP4Address {
     }
 
     const p = str.trim().split('.');
+
     if (p.length !== 4) {
       return null;
     }
 
     const a = new Array(4);
+
     for (let i = 0; i < 4; ++i) {
       const v = p[i] | 0;
-      if (v !== +p[i] || v < 0 || v > 255) {
+
+      if (v !== Number(p[i]) || v < 0 || v > 255) {
         return null;
       }
       a[i] = v;
