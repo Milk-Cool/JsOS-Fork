@@ -8,7 +8,7 @@
 'use strict';
 
 const PciDevice = require('../../core/pci/pci-device');
-const Buffer = require('buffer').Buffer;
+const { Buffer } = require('buffer');
 const Driver = require('..');
 const CONSTANT = require('./constants');
 
@@ -16,6 +16,7 @@ class ES1370 extends Driver {
   constructor () {
     super('es1370', 'ensoniq', 'UsernameAK & PROPHESSOR');
     this.onIRQ = this.onIRQ.bind(this);
+    $$.audio = this;
   }
 
   static init (device) {
@@ -27,30 +28,34 @@ class ES1370 extends Driver {
     this.irq = device.getIRQ();
     device.setPciCommandFlag(PciDevice.commandFlag.BusMaster);
     device.getIRQ().on(this.onIRQ);
-    const iobar = device.bars[0];
-    const pagePort = iobar.resource.offsetPort(CONSTANT.DSP_Write);
-    const addrPort = iobar.resource.offsetPort(0x38);
-    const sizePort = iobar.resource.offsetPort(0x3c);
-    const serialPort = iobar.resource.offsetPort(0x20);
-    const cmdPort = iobar.resource.offsetPort(0x0);
-    const fcPort = iobar.resource.offsetPort(0x28);
+    this.iobar = device.bars[0];
+    this.pagePort = this.iobar.resource.offsetPort(CONSTANT.DSP_Write);
+    this.addrPort = this.iobar.resource.offsetPort(0x38);
+    this.sizePort = this.iobar.resource.offsetPort(0x3c);
+    this.serialPort = this.iobar.resource.offsetPort(0x20);
+    this.cmdPort = this.iobar.resource.offsetPort(0x0);
+    this.fcPort = this.iobar.resource.offsetPort(0x28);
 
     debug('Controller reset');
+    this.test1();
+  }
+
+  test1 (func) { // use #$$.audio.test1((x)=>somecode)
     this.sampleRate = 48000; // TODO: set rate
-    pagePort.write32(CONSTANT.DSP_Write);
+    this.pagePort.write32(CONSTANT.DSP_Write);
     this.bufferInfo = __SYSCALL.allocDMA();
     this.buffer = Buffer.from(this.bufferInfo.buffer);
-    addrPort.write32(this.bufferInfo.address);
-    sizePort.write32(0xFFFF);
-    fcPort.write32(0xFFFF);
+    this.addrPort.write32(this.bufferInfo.address);
+    this.sizePort.write32(0xFFFF);
+    this.fcPort.write32(0xFFFF);
 
     for (let i = 0; i < 256 * 1024; i += 4) {
-      this.buffer.writeUInt32LE(i, i); // Math.floor(Math.random() * 0xFFFFFFFF), i);
+      this.buffer.writeUInt32LE(func ? func(i) : 0xFFFFF + Math.abs(256 * 1024 / 2 - i), i); // Math.floor(Math.random() * 0xFFFFFFFF), i);
     }
 
     debug('Playback buffer init');
-    serialPort.write32(0x0020020C);
-    cmdPort.write32(0x00000020);
+    this.serialPort.write32(0x0020020C);
+    this.cmdPort.write32(0x00000020);
   }
 
   onIRQ () {
