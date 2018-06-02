@@ -9,6 +9,7 @@ const Driver = require('..');
 
 class ES1370 extends Driver {
   constructor() {
+    super();
     this.onIRQ = this.onIRQ.bind(this);
   }
 
