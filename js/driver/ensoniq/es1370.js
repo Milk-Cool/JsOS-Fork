@@ -50,7 +50,7 @@ class ES1370 extends Driver {
     this.fcPort.write32(0xFFFF);
 
     for (let i = 0; i < 256 * 1024; i += 4) {
-      this.buffer.writeUInt32LE(func ? func(i) : 0xFFFFF + Math.abs(256 * 1024 / 2 - i), i); // Math.floor(Math.random() * 0xFFFFFFFF), i);
+      this.buffer.writeUInt32LE(func ? func(i) : 0xFFFFF + i, i); // Math.floor(Math.random() * 0xFFFFFFFF), i);
     }
 
     debug('Playback buffer init');
