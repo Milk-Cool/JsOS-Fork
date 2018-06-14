@@ -121,13 +121,13 @@ function render () {
 
   JsMB.setColor(0x2);
 
-  for (let i = 0; i < 1024 * 256; i += 4) {
-    if (i % scale === 0 && widthIndex < JsMB.screenWidth()/* i / 4 < JsMB.screenWidth() */) {
-      JsMB
+  for (let i = 0; i < 1024 * 256; i += 3276) {
+    // if (i % scale === 0 && widthIndex < JsMB.screenWidth()/* i / 4 < JsMB.screenWidth() */) {
+    JsMB
         .drawPlot(widthIndex, buffer.readUInt32LE(i) / 0xFFFF/*  * cver */)
         .drawPlot(widthIndex, JsMB.screenHeight() - 2, String(widthIndex % 10));
-      widthIndex++;
-    }
+    widthIndex++;
+    // }
   }
   JsMB.repaint();
 }
