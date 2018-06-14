@@ -18,6 +18,7 @@ let resp;
 // const JsMB = require('../../core/graphics/jsmb-pseudo');
 
 const fs = require('fs');
+const CONSTANT = require('../../driver/ensoniq/constants');
 
 function keylog (key) {
   if (key.type === 'f12') return stop();
@@ -54,6 +55,8 @@ function main (api, res) {
 
     io.writeLine('OK!');
 
+    io.writeLine(`=== Header ===`);
+
     const buffer = Buffer.from(data);
 
     const chunkId = String.fromCharCode(...[
@@ -63,7 +66,7 @@ function main (api, res) {
       buffer.readInt8(3)
     ]);
 
-    io.writeLine(`Header: ${chunkId}    ${chunkId === 'RIFF' ? 'OK!' : 'Not a WAV!'}`);
+    io.writeLine(`Container: ${chunkId}    ${chunkId === 'RIFF' ? 'OK!' : 'Not a WAV!'}`);
 
     const chunkSize = buffer.readInt32LE(4);
 
@@ -102,6 +105,59 @@ function main (api, res) {
     const sampleRate = buffer.readInt32LE(24);
 
     io.writeLine(`Sample rate: ${sampleRate}`);
+
+    const byteRate = buffer.readInt32LE(28);
+
+    io.writeLine(`Byte rate: ${byteRate}`);
+
+    const blockAlign = buffer.readInt16LE(32);
+
+    io.writeLine(`Block align: ${blockAlign}`);
+
+    const bitsPerSample = buffer.readInt16LE(34);
+
+    io.writeLine(`Bits per sample: ${bitsPerSample}`);
+
+    const subchunk2Id = String.fromCharCode(...[
+      buffer.readInt8(36),
+      buffer.readInt8(37),
+      buffer.readInt8(38),
+      buffer.readInt8(39)
+    ]);
+
+    io.writeLine(`Subchunk 2 id: ${subchunk2Id}    ${subchunk2Id === 'data' ? 'OK!' : 'Not a WAV!'}`);
+
+    const subchunk2Size = buffer.readInt32LE(40);
+
+    io.writeLine(`Subchunk 2 size: ${subchunk2Size}`);
+
+    io.writeLine(`=== End of the header ===`);
+
+    const durationSec = subchunk2Size / (bitsPerSample / 8) / numChannels / sampleRate;
+    const durationMin = Math.floor(durationSec) / 60;
+
+    io.writeLine(`Duration: ${durationSec.toFixed(2)}s.`);
+
+    io.writeLine('Trying to play...');
+
+    if (typeof $$.audio === 'undefined') return io.writeError('Es1370 audiocard not found!');
+
+    $$.audio.sampleRate = sampleRate;
+
+    $$.audio.pagePort.write32(CONSTANT.DSP_Write);
+    $$.audio.bufferInfo = __SYSCALL.allocDMA();
+    $$.audio.buffer = Buffer.from($$.audio.bufferInfo.buffer);
+    $$.audio.addrPort.write32($$.audio.bufferInfo.address);
+    $$.audio.sizePort.write32(0xFFFF);
+    $$.audio.fcPort.write32(0xFFFF);
+
+    for (let i = 0; i < 256 * 1024; i += 4) {
+      $$.audio.buffer.writeUInt32LE(subchunk2Size - 44 - i > 0 ? buffer.readUInt32LE(44 + i) : 0, i);
+    }
+
+    debug('Playback buffer init');
+    $$.audio.serialPort.write32(0x0020020C);
+    $$.audio.cmdPort.write32(0x00000020);
   });
 }
 
