@@ -1,6 +1,13 @@
 // Audio testing application for JsOS
 // By PROPHESSOR (2018)
 
+/*
+  Литература:
+    https://audiocoding.ru/article/2008/05/22/wav-file-structure.html
+    http://www.topherlee.com/software/pcm-tut-wavformat.html
+    http://soundfile.sapp.org/doc/WaveFormat/ - Самый наглядный вариант
+*/
+
 'use strict';
 
 let io,
@@ -48,68 +55,61 @@ function main (api, res) {
 
     const buffer = Buffer.from(data);
 
-    let offset = 0;
+    // console.log(buffer.toJSON()); // Не хватает памяти
+
     const chunkId = String.fromCharCode(...[
-      buffer.readInt8(offset++),
-      buffer.readInt8(offset++),
-      buffer.readInt8(offset++),
-      buffer.readInt8(offset++)
+      buffer.readInt8(0),
+      buffer.readInt8(1),
+      buffer.readInt8(2),
+      buffer.readInt8(3)
     ]);
 
-    io.writeLine(`Header: ${chunkId}    ${chunkId === 'RIFF' ? 'OK!' : 'Not a WAV!'}`);
+    io.writeLine(`Header: ${chunkId}    ${chunkId === 'RIFF' ? 'OK!' : 'Not a WAV!'}`); // Норма
 
-    offset += 4;
-
-    const chunkSize = buffer.readInt32LE(offset);
+    const chunkSize = buffer.readInt32LE(4);
 
     io.writeLine(`File size: ${chunkSize}`);
 
-    offset += 4;
+    // FIXME: Какого-то фига, в buffer здесь идёт отступ ещё на 4 байта... Хотя в оригинальном файле их нет
 
     const format = String.fromCharCode(...[
-      buffer.readInt8(offset++),
-      buffer.readInt8(offset++),
-      buffer.readInt8(offset++),
-      buffer.readInt8(offset++)
+      buffer.readInt8(12), // Насильно сдвинул на эти 4 байта FIXME: Исправить
+      buffer.readInt8(13),
+      buffer.readInt8(14),
+      buffer.readInt8(15)
     ]);
 
-    io.writeLine(`Format: ${format}    ${format === 'WAVE' ? 'OK!' : 'Not a WAV!'}`);
+    io.writeLine(`Format: ${format}    ${format === 'WAVE' ? 'OK!' : 'Not a WAV!'}`); // Нормально
 
     const subchunk1Id = String.fromCharCode(...[
-      buffer.readInt8(offset++),
-      buffer.readInt8(offset++),
-      buffer.readInt8(offset++),
-      buffer.readInt8(offset++)
+      buffer.readInt8(16),
+      buffer.readInt8(17),
+      buffer.readInt8(18),
+      buffer.readInt8(19)
     ]);
 
-    io.writeLine(`Symbols: ${subchunk1Id}    ${subchunk1Id === 'fmt ' ? 'OK!' : 'Not a WAV!'}`);
+    io.writeLine(`Symbols: ${subchunk1Id}    ${subchunk1Id === 'fmt ' ? 'OK!' : 'Not a WAV!'}`); // Нормально
 
-    // offset += 4; // FIXME: Костыль
+    const subchunk1Size = buffer.readInt32LE(20);
 
-    const subchunk1Size = buffer.readInt8(offset);
+    io.writeLine(`Subchunk 1 size: ${subchunk1Size}    ${subchunk1Size === 16 ? 'PCM' : 'Unknown'}`); // Нормально
 
-    io.writeLine(`Subchunk 1 size: ${subchunk1Size}    ${subchunk1Size === 16 ? 'PCM' : 'Unknown'}`);
+    const audioformat = buffer.readInt16LE(24);
 
-    offset += 4; // FIXME: Костыль
+    io.writeLine(`Audio format: ${audioformat}    ${audioformat === 1 ? 'PCM' : 'Unknown'}`); // Нормально
 
-    const audioformat = buffer.readInt16LE(offset);
+    const numChannels = buffer.readInt16LE(26);
 
-    io.writeLine(`Audio format: ${audioformat}    ${audioformat === 1 ? 'PCM' : 'Unknown'}`);
+    io.writeLine(`Num channels: ${numChannels}    ${numChannels === 1 ? 'Mono' : 'Stereo'}`); // Нормально
 
-    offset += 2;
+    const sampleRate = buffer.readInt32LE(8);
 
-    const numChannels = buffer.readInt16LE(offset);
+    io.writeLine(`Sample rate: ${sampleRate}`); // Показывает какой-то бред. Пытался отыскать его через HEX редактор - не нашел
 
-    io.writeLine(`Num channels: ${numChannels}    ${numChannels === 1 ? 'Mono' : 'Stereo'}`);
-
-    offset += 2;
-
-    const sampleRate = buffer.readInt32LE(offset);
-
-    io.writeLine(`Sample rate: ${sampleRate}`);
+    /* PROPHESSOR:
+      Складывается впечатление, что при чтении файла/преобразовании исходной строки в буффер (FIXME:) данные немного портятся...
+    */
   });
-
-  // render();
 }
 
 exports.call = (cmd, args, api, res) => main(api, res);
