@@ -55,6 +55,8 @@ function main (api, res) {
 
     const buffer = Buffer.from(data);
 
+    io.writeLine(`First 12 bytes: ${Array.from(buffer.slice(0, 12)).map((e) => e.toString(16))}`);
+
     // console.log(buffer.toJSON()); // Не хватает памяти
 
     const chunkId = String.fromCharCode(...[
