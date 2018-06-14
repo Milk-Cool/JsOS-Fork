@@ -249,7 +249,7 @@
           } else {
             /* eslint-disable max-len */
             evalScriptFn(
-              `((require,exports,module,__filename,__dirname) => {${content}})(((m) => {return function require(path){require.cache=m.require.cache;require.register=m.require.register;return m.require(path)}})(global.module),global.module.exports,global.module,global.module.filename,global.module.dirname)`,
+              `((require,exports,module,__filename,__dirname) => {${content}})(((m) => {function require(path){return m.require(path)};require.cache=m.require.cache;require.register=m.require.register;return require})(global.module),global.module.exports,global.module,global.module.filename,global.module.dirname)`,
               displayPath);
             /* eslint-enable max-len */
           }
