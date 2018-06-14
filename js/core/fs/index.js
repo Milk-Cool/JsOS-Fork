@@ -105,7 +105,7 @@ module.exports = {
 
       log(`${path} extracted to ${extpath}`, { level: 'fs' });
 
-      callback(null, __SYSCALL.initrdReadFile(extpath));
+      callback(null, __SYSCALL.initrdReadFileBuffer(extpath));
       success('OK!', { from: 'FS->readFile->System', level: 'fs' });
 
       return;
