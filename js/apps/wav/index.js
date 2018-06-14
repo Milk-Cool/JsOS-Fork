@@ -1,4 +1,4 @@
-// Audio testing application for JsOS
+// Wav reader for JsOS
 // By PROPHESSOR (2018)
 
 /*
@@ -10,13 +10,14 @@
 
 'use strict';
 
-let io,
-  kb,
-  resp;
-const JsMB = require('../../core/graphics/jsmb-pseudo');
+/* eslint-disable no-use-before-define */ // <= unreal =D
+
+let io;
+let kb;
+let resp;
+// const JsMB = require('../../core/graphics/jsmb-pseudo');
 
 const fs = require('fs');
-
 
 function keylog (key) {
   if (key.type === 'f12') return stop();
@@ -55,10 +56,6 @@ function main (api, res) {
 
     const buffer = Buffer.from(data);
 
-    io.writeLine(`First 12 bytes: ${Array.from(buffer.slice(0, 12)).map((e) => e.toString(16))}`);
-
-    // console.log(buffer.toJSON()); // Не хватает памяти
-
     const chunkId = String.fromCharCode(...[
       buffer.readInt8(0),
       buffer.readInt8(1),
@@ -66,51 +63,45 @@ function main (api, res) {
       buffer.readInt8(3)
     ]);
 
-    io.writeLine(`Header: ${chunkId}    ${chunkId === 'RIFF' ? 'OK!' : 'Not a WAV!'}`); // Норма
+    io.writeLine(`Header: ${chunkId}    ${chunkId === 'RIFF' ? 'OK!' : 'Not a WAV!'}`);
 
     const chunkSize = buffer.readInt32LE(4);
 
     io.writeLine(`File size: ${chunkSize}`);
 
-    // FIXME: Какого-то фига, в buffer здесь идёт отступ ещё на 4 байта... Хотя в оригинальном файле их нет
-
     const format = String.fromCharCode(...[
-      buffer.readInt8(12), // Насильно сдвинул на эти 4 байта FIXME: Исправить
+      buffer.readInt8(8),
+      buffer.readInt8(9),
+      buffer.readInt8(10),
+      buffer.readInt8(11)
+    ]);
+
+    io.writeLine(`Format: ${format}    ${format === 'WAVE' ? 'OK!' : 'Not a WAV!'}`);
+
+    const subchunk1Id = String.fromCharCode(...[
+      buffer.readInt8(12),
       buffer.readInt8(13),
       buffer.readInt8(14),
       buffer.readInt8(15)
     ]);
 
-    io.writeLine(`Format: ${format}    ${format === 'WAVE' ? 'OK!' : 'Not a WAV!'}`); // Нормально
+    io.writeLine(`Symbols: ${subchunk1Id}    ${subchunk1Id === 'fmt ' ? 'OK!' : 'Not a WAV!'}`);
 
-    const subchunk1Id = String.fromCharCode(...[
-      buffer.readInt8(16),
-      buffer.readInt8(17),
-      buffer.readInt8(18),
-      buffer.readInt8(19)
-    ]);
+    const subchunk1Size = buffer.readInt32LE(16);
 
-    io.writeLine(`Symbols: ${subchunk1Id}    ${subchunk1Id === 'fmt ' ? 'OK!' : 'Not a WAV!'}`); // Нормально
+    io.writeLine(`Subchunk 1 size: ${subchunk1Size}    ${subchunk1Size === 16 ? 'PCM' : 'Unknown'}`);
 
-    const subchunk1Size = buffer.readInt32LE(20);
+    const audioformat = buffer.readInt16LE(20);
 
-    io.writeLine(`Subchunk 1 size: ${subchunk1Size}    ${subchunk1Size === 16 ? 'PCM' : 'Unknown'}`); // Нормально
+    io.writeLine(`Audio format: ${audioformat}    ${audioformat === 1 ? 'PCM' : 'Unknown'}`);
 
-    const audioformat = buffer.readInt16LE(24);
+    const numChannels = buffer.readInt16LE(22);
 
-    io.writeLine(`Audio format: ${audioformat}    ${audioformat === 1 ? 'PCM' : 'Unknown'}`); // Нормально
+    io.writeLine(`Num channels: ${numChannels}    ${numChannels === 1 ? 'Mono' : 'Stereo'}`);
 
-    const numChannels = buffer.readInt16LE(26);
+    const sampleRate = buffer.readInt32LE(24);
 
-    io.writeLine(`Num channels: ${numChannels}    ${numChannels === 1 ? 'Mono' : 'Stereo'}`); // Нормально
-
-    const sampleRate = buffer.readInt32LE(8);
-
-    io.writeLine(`Sample rate: ${sampleRate}`); // Показывает какой-то бред. Пытался отыскать его через HEX редактор - не нашел
-
-    /* PROPHESSOR:
-      Складывается впечатление, что при чтении файла/преобразовании исходной строки в буффер (FIXME:) данные немного портятся...
-    */
+    io.writeLine(`Sample rate: ${sampleRate}`);
   });
 }
 
