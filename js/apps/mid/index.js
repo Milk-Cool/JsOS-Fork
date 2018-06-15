@@ -12,9 +12,12 @@
 /* eslint-disable max-depth */
 /* eslint-disable complexity */
 
-let io;
-let kb;
-let resp;
+let io = null;
+let kb = null;
+let resp = null;
+let isPlaying = false;
+
+const music = [];
 // const JsMB = require('../../core/graphics/jsmb-pseudo');
 
 const fs = require('fs');
@@ -23,6 +26,30 @@ const Note = require('./Note');
 
 function keylog (key) {
   if (key.type === 'f12') return stop();
+  if (key.type === 'enter') {
+    if (isPlaying) return;
+    isPlaying = true;
+    io.writeLine(`Playing...`);
+    let position = 0;
+
+    const tick = () => {
+      const note = music[position];
+
+      const DURATION = 500;
+
+      io.writeLine(`Note: ${note}`);
+      $$.speaker.play(note.toFrequency(), DURATION);
+      if (position < music.length - 1) {
+        position++;
+        setTimeout(tick, DURATION);
+      } else {
+        io.writeLine('End!', 0);
+        isPlaying = false;
+      }
+    };
+
+    tick();
+  }
 
   return false;
 }
@@ -192,10 +219,11 @@ function main (api, res) {
               case 0x90:   // Нажать клавишу.
                 io.writeLine(`> Note ${note} ON`);
                 console.log(`> Note ${note} ON`);
+                music.push(note);
                 break;
               case 0xA0:  // Сменить силу нажатия клавишы.
-                io.writeLine(`> Change note's ${note} velocity to ${note.dynamics}`);
-                console.log(`> Change note's ${note} velocity to ${note.dynamics}`);
+                io.writeLine(`> Change note's ${note.split(' '[0])} velocity to ${note.volume}`);
+                console.log(`> Change note's ${note.split(' '[0])} velocity to ${note.volume}`);
                 break;
               default: break;
             }
@@ -234,6 +262,7 @@ function main (api, res) {
       }
 
       io.writeLine(`=== End of the track ${i + 1} block ===`);
+      io.writeLine(`Press Enter to play`);
     }
   });
 }
