@@ -80,17 +80,17 @@ function readFileImpl (fnName, path, opts) {
     return [makeErrorNotFound(path, fnName), null];
   }
 
-  const buf = __SYSCALL.initrdReadFileBuffer(absolute);
+  const buf = Buffer.from(__SYSCALL.initrdReadFileBuffer(absolute));
 
   if (!buf) {
     return [makeErrorNotFound(path, fnName), null];
   }
 
   if (encoding) {
-    return [null, new Buffer(buf).toString(encoding)];
+    return [null, buf.toString(encoding)];
   }
 
-  return [null, new Buffer(buf)];
+  return [null, buf];
 }
 
 exports.readFileImpl = (path, opts, cb) => {
@@ -115,6 +115,7 @@ exports.readFileImplSync = (path, opts) => {
 
   return buf;
 };
+
 exports.readFile = fsmod.readFile;
 exports.readFileSync = fsmod.readFileSync;
 

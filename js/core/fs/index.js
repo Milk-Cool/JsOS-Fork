@@ -23,7 +23,7 @@ const utils = new Utils(llfs);
 const { log, success, error, warn } = $$.logger;
 
 module.exports = {
-  readdir (path, options = () => {}, callback = options) {
+  readdir (path, options = () => { }, callback = options) {
     let resolved = null;
 
     if (utils.isSystemPath(path)) {
@@ -80,10 +80,10 @@ module.exports = {
           return filesystem.readdir(resolved.parts.slice(2).join('/'), callback);
         })
 
-      /* .then(list => {
-        if (resolved.level <= 1) return;
-        callback(null, list.map(file => file.name), list);
-      })*/
+        /* .then(list => {
+          if (resolved.level <= 1) return;
+          callback(null, list.map(file => file.name), list);
+        })*/
         .catch((err) => {
           callback(err);
         });
@@ -95,8 +95,12 @@ module.exports = {
    * @param  {object} [options] - Options
    * @param  {function} callback - Callback(error, result)
    */
-  readFile (path, options = () => {}, callback = options) {
+  readFile (path, options = () => { }, callback = options) {
     let resolved = null;
+
+    const encoding = typeof options === 'string'
+      ? options
+      : 'buffer';
 
     if (utils.isSystemPath(path)) {
       log(`${path} is a system path`, { level: 'fs' });
@@ -105,7 +109,10 @@ module.exports = {
 
       log(`${path} extracted to ${extpath}`, { level: 'fs' });
 
-      callback(null, __SYSCALL.initrdReadFileBuffer(extpath));
+      if (encoding === 'buffer')
+        callback(null, Buffer.from(__SYSCALL.initrdReadFileBuffer(extpath)));
+      else
+        callback(null, Buffer.from(__SYSCALL.initrdReadFileBuffer(extpath)).toString(encoding));
       success('OK!', { from: 'FS->readFile->System', level: 'fs' });
 
       return;
@@ -133,11 +140,10 @@ module.exports = {
 
   /** Returns file content (or buffer if encoding = 'buffer')
    * @param  {string} path - Path to file
-   * @param  {string} [encoding='ascii'] - File encoding
+   * @param  {string} [encoding='buffer'] - File encoding
    * @returns {string} or Buffer
    */
-  readFileSync (path, encoding = 'ascii') {
-    // TODO: buffer => binary
+  readFileSync (path, encoding = 'buffer') {
     if (utils.isSystemPath(path)) {
       log(`${path} is a system path`, { level: 'fs' });
 
@@ -147,17 +153,19 @@ module.exports = {
 
       success('OK!', { from: 'FS->readFile->System', level: 'fs' });
 
+      const buffer = Buffer.from(__SYSCALL.initrdReadFileBuffer(extpath));
+
       return encoding === 'buffer'
-        ? __SYSCALL.initrdReadFileBuffer(extpath)
-        : __SYSCALL.initrdReadFile(extpath);
+        ? buffer
+        : buffer.toString(encoding);
     }
 
-    warn('readFileSync for external pathes doesn\'t implemented!', { from: 'fs->readFileSync' });
+    warn('readFileSync for external pathes doesn\'t implemented! Use readFile.', { from: 'fs->readFileSync' });
 
-    return ''; // TODO:
+    return new Buffer(0); // TODO:
   },
 
-  writeFile (path, data, options = () => {}, callback = options) {
+  writeFile (path, data, options = () => { }, callback = options) {
     let resolved = null;
 
     try {
@@ -179,7 +187,8 @@ module.exports = {
       callback(new Error('Is a directory'));
     }
   },
-  mkdir (path, options = () => {}, callback = options) {
+
+  mkdir (path, options = () => { }, callback = options) {
     let resolved = null;
 
     try {
