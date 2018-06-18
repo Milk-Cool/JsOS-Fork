@@ -55,9 +55,13 @@ class ES1370 extends Driver {
     }
 
     debug('Playback buffer init');
-    this.serialPort.write32(0x0020020C);
+    this.serialPort.write32(0x00200208);
     this.cmdPort.write32(0x00000020);
   }
+
+  /*putAudioFormat(bits, channels) {
+    this.serialPort.write32(0x00200200);
+  }*/
 
   onIRQ () {
     debug('ES1370 IRQ');

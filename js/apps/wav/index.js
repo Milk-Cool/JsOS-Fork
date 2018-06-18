@@ -156,7 +156,7 @@ function main (api, res) {
     }
 
     debug('Playback buffer init');
-    $$.audio.serialPort.write32(0x0020020C);
+    $$.audio.serialPort.write32(0x00000208);
     $$.audio.cmdPort.write32(0x00000020);
   });
 }
