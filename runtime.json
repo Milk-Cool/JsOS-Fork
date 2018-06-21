@@ -1,0 +1,5 @@
+{
+  "v8": {
+    "flags": "--expose-wasm --allow-natives-syntax"
+  }
+}
