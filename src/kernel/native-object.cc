@@ -567,14 +567,12 @@ NATIVE_FUNCTION(NativesObject, VesaGetCInfo)
 
   VbeInfoBlock *vib = new VbeInfoBlock;
 
-  /*__asm__(
-      "movw %%es, %%bx\n\t"
-      "movw $0, %%es\n\t"
+  __asm__(
+      "movw $0x4F00, %%ax\n\t"
       "int $0x10\n\t"
-      "movw %%bx, %%es\n\t"
       :
-      : "rdi"(vib), "ax"(0x4F00)
-      : "bx");*/
+      : "di"(vib)
+      : "ax");
 
   printf("%s", vib->VbeSignature);
 
