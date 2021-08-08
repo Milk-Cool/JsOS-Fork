@@ -65,6 +65,8 @@ exports.runCommand = (name, args, done) => {
   } catch (e) {
     new (require('errors').TerminalError)(`Command ${name} crashed!`);
     debug(e);
+
+    return done(1);
   }
 };
 
