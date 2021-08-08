@@ -118,7 +118,9 @@ exports.readLine = (cb) => {
 
             text = text.slice(1);
             try {
-              result = `=>${eval(text)}\n`; // eslint-disable-line no-eval
+              result = eval(text); // eslint-disable-line no-eval
+              if (String(result) === '[object Object]') result = JSON.stringify(result);
+              result = `=>${result}\n`;
             } catch (e) {
               result = `\nError: ${e}\n`;
             }
