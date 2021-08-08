@@ -3,8 +3,6 @@
 		"debug": true,
 		"__SYSCALL": true,
 		"runtime": true,
-		"$$": true,
-		"PERSISTENCE": true,
 		"performance": true
 	},
 	"env": {

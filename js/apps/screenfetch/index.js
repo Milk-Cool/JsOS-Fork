@@ -5,6 +5,8 @@
 'use strict';
 
 const os = require('os');
+const $$ = require('jsos');
+const persistence = require('persistence');
 
 let io;
 
@@ -58,7 +60,7 @@ const suffix = [
   () => `JsOS version ${require('../../../package.json').version}`,
   () => `JsOS kernel version ${os.release()} ${os.arch()} (${os.endianness()})`,
   () => os.uptime(),
-  () => PERSISTENCE.Apps._commands.length,
+  () => persistence.Apps._commands.length,
   () => 'JsOS-Shell',
   () => `${80}x${25}`,
   () => 'Terminal shell',

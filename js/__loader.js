@@ -311,6 +311,8 @@
     'http':           './modules/http.js',
     'logger':         './modules/logger.js',
     'errors':         './modules/errors.js',
+    'jsos':           './modules/jsos.js',
+    'persistence':    './modules/persistence.js',
     /* eslint-enable camelcase */
   }, runtimePackagePath);
 

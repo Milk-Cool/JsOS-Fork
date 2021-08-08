@@ -1,4 +1,4 @@
-// Copyright 2017-present jsos project authors
+// Copyright 2021 JsOS project authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 'use strict';
 
-const PERSISTENCE = {
-  'Editor': {
-    'history':         [],
-    'historyPosition': 0,
-  },
-  'Shell': {
-    'pwd': '/',
-  },
-  'Apps': { '_commands': {}},
-};
+const core = require('../core/index');
 
-global.PERSISTENCE = module.exports = PERSISTENCE;
+module.exports = core;

@@ -15,6 +15,7 @@
 
 'use strict';
 
+const persistence = require('persistence');
 const printer = require('./printer');
 const logger = new (require('../../modules/logger'))({ 'defaultStdio': printer });// $$.logger.log;
 const { log } = logger;
@@ -148,19 +149,19 @@ class LineEditor {
   }
 
   writeHistory (cmd) {
-    if (cmd === PERSISTENCE.Editor.history[PERSISTENCE.Editor.historyPosition - 1] ||
+    if (cmd === persistence.Editor.history[persistence.Editor.historyPosition - 1] ||
       cmd.trim() === '')
       return log('Don\'t write to history because repeation or empty', { 'level': 'LineEditor' });
-    PERSISTENCE.Editor.history.push(cmd);
-    PERSISTENCE.Editor.historyPosition = PERSISTENCE.Editor.history.length;
-    log(`Editor->writeHistory(${cmd}) ==> ${JSON.stringify(PERSISTENCE.Editor.history)} [${typeof (PERSISTENCE.Editor.history)}]`, { level: 'LineEditor' }); //eslint-disable-line
+    persistence.Editor.history.push(cmd);
+    persistence.Editor.historyPosition = persistence.Editor.history.length;
+    log(`Editor->writeHistory(${cmd}) ==> ${JSON.stringify(persistence.Editor.history)} [${typeof (persistence.Editor.history)}]`, { level: 'LineEditor' }); //eslint-disable-line
   }
 
   previous () {
     log('Editor->previous()', { 'level': 'LineEditor' });
-    if (PERSISTENCE.Editor.historyPosition > 0) {
-      PERSISTENCE.Editor.historyPosition--;
-      this.setInputBox(PERSISTENCE.Editor.history[PERSISTENCE.Editor.historyPosition] || '');
+    if (persistence.Editor.historyPosition > 0) {
+      persistence.Editor.historyPosition--;
+      this.setInputBox(persistence.Editor.history[persistence.Editor.historyPosition] || '');
     } else {
       log('Out of array ( < 0 )', { 'level': 'LineEditor' });
     }
@@ -168,9 +169,9 @@ class LineEditor {
 
   next () {
     log('Editor->next()', { 'level': 'LineEditor' });
-    if (PERSISTENCE.Editor.historyPosition < PERSISTENCE.Editor.history.length) {
-      PERSISTENCE.Editor.historyPosition++;
-      this.setInputBox(PERSISTENCE.Editor.history[PERSISTENCE.Editor.historyPosition] || '');
+    if (persistence.Editor.historyPosition < persistence.Editor.history.length) {
+      persistence.Editor.historyPosition++;
+      this.setInputBox(persistence.Editor.history[persistence.Editor.historyPosition] || '');
     } else {
       log('Out of array ( > max )', { 'level': 'LineEditor' });
     }

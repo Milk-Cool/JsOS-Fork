@@ -3,6 +3,8 @@
 
 'use strict';
 
+const $$ = require('jsos');
+
 const DURATION = 50;
 const MIN_OCTAVE = 1;
 const MAX_OCTAVE = 7;

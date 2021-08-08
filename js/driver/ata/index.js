@@ -1,7 +1,6 @@
 'use strict';
 
-/* global $$ */
-
+const $$ = require('jsos');
 const driverUtils = require('../../core/driver-utils');
 
 class ATA {

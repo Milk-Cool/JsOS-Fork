@@ -14,6 +14,7 @@
 
 'use strict';
 
+const $$ = require('jsos');
 const { SystemError } = require('./errors');
 
 const names = [

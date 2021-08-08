@@ -16,6 +16,8 @@
 
 'use strict';
 
+const $$ = require('jsos');
+const persistence = require('persistence');
 const processor = require('./index.js');
 const { log, warn } = $$.logger;
 
@@ -241,7 +243,7 @@ const cmds = {
     'description': 'Show current directory path',
     'usage':       'pwd',
     run (args, f, res) {
-      f.stdio.writeLine(PERSISTENCE.Shell.pwd);
+      f.stdio.writeLine(persistence.Shell.pwd);
 
       return res(0);
     },
@@ -252,7 +254,7 @@ const cmds = {
     run (args, f, res) {
       const path = require('path');
 
-      PERSISTENCE.Shell.pwd = path.join(PERSISTENCE.Shell.pwd, args);
+      persistence.Shell.pwd = path.join(persistence.Shell.pwd, args);
 
       return res(0);
     },
@@ -265,7 +267,7 @@ const cmds = {
       const path = require('path');
       // const filesize = require('../../utils/filesize');
 
-      const pwd = path.join(PERSISTENCE.Shell.pwd, args);
+      const pwd = path.join(persistence.Shell.pwd, args);
 
       fs.readdir(pwd, 'utf8', (err, list) => {
         if (err) {
@@ -296,7 +298,7 @@ const cmds = {
       const fs = require('fs');
       const path = require('path');
 
-      const pwd = path.join(PERSISTENCE.Shell.pwd, args);
+      const pwd = path.join(persistence.Shell.pwd, args);
 
       try {
         fs.readFile(pwd, 'utf8', (err, data) => {

@@ -28,7 +28,8 @@ const isDebug = packagejson.runtimejs.debug;
 
 global.debug = isDebug ? console.log : () => {};
 
-require('./persistence');
+// Initialize persistence module
+require('persistence');
 
 // Load runtime.js core
 const runtime = require('./core');

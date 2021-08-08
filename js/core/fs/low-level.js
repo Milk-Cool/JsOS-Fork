@@ -1,5 +1,6 @@
 'use strict';
 
+const $$ = require('jsos');
 const fatfs = require('./fatfs');
 
 class Partition {

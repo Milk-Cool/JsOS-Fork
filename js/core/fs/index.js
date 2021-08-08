@@ -16,6 +16,7 @@
 
 'use strict';
 
+const $$ = require('jsos');
 const llfs = require('./low-level');
 const Utils = require('./utils');
 const utils = new Utils(llfs);

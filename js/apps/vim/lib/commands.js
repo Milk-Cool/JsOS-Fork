@@ -1,7 +1,8 @@
 'use strict';
 
-const io = $$.stdio.defaultStdio;
+const $$ = require('jsos');
 const fs = require('fs');
+const io = $$.stdio.defaultStdio;
 
 function main (Vim, exit) {
   Vim.addCommand({

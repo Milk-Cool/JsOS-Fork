@@ -14,6 +14,8 @@
 
 'use strict';
 
+const $$ = require('jsos');
+
 class JsOSError {
   constructor (message, errcode, call) {
     let msg = '';

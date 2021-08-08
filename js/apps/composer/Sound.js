@@ -5,6 +5,8 @@
 
 'use strict';
 
+const $$ = require('jsos');
+
 const Notes = require('./Notes');
 
 const { info, error, success } = $$.logger;

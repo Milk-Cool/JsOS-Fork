@@ -15,6 +15,7 @@
 'use strict';
 
 try {
+  const $$ = require('jsos');
   const io = $$.stdio.defaultStdio;
   const printer = require('../tty/printer');
 

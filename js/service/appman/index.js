@@ -14,6 +14,9 @@
 
 'use strict';
 
+const $$ = require('jsos');
+const persistence = require('persistence');
+
 class App {
   constructor () {
     'do nothing';
@@ -24,7 +27,7 @@ class App {
       'run':         this.run,
     });
     this.isAppExist = this.isAppExist.bind(this);
-    debug(`PERSISTENCE: ${PERSISTENCE}`);
+    debug(`PERSISTENCE: ${persistence}`);
   }
 
   install (name) {
@@ -41,14 +44,14 @@ class App {
     }
 
     // Install app
-    PERSISTENCE.Apps[name] = {
+    persistence.Apps[name] = {
       'run':      app.call,
       'commands': app.commands,
     };
 
     // Create links
     for (const i of app.commands) {
-      PERSISTENCE.Apps._commands[i] = name;
+      persistence.Apps._commands[i] = name;
       // $$.shell.setCommand(i, {
       //   description: 'Application',
       //   usage: `start ${i} <arguments>`,
@@ -68,7 +71,7 @@ class App {
     const app = _args.shift();
 
     function isAppExist (x) { // FIXME: Точно костыль, но спать хочется
-      return Boolean(PERSISTENCE.Apps[x]); // || PERSISTENCE.Apps._commands[app]);
+      return Boolean(persistence.Apps[x]); // || PERSISTENCE.Apps._commands[app]);
     }
     if (!isAppExist(app) || app === 0) {
       f.stdio.writeError(`App ${app} doesn't exist!`);
@@ -80,7 +83,7 @@ class App {
     /* const callback =  */
 
     try {
-      PERSISTENCE.Apps[app].run(app, args, f, res);
+      persistence.Apps[app].run(app, args, f, res);
     } catch (e) {
       f.stdio.writeError(`App ${app} crashed!`);
       debug(e);
@@ -92,7 +95,7 @@ class App {
   }
 
   isAppExist (app) {
-    return Boolean(PERSISTENCE.Apps[app]); // || PERSISTENCE.Apps._commands[app]);
+    return Boolean(persistence.Apps[app]); // || PERSISTENCE.Apps._commands[app]);
   }
 
   runByCmd (cmd) {
@@ -100,7 +103,7 @@ class App {
   }
 
   cmd2app (cmd) {
-    return PERSISTENCE.Apps._commands[cmd] || 0;
+    return persistence.Apps._commands[cmd] || 0;
   }
 }
 
