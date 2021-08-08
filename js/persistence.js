@@ -20,6 +20,9 @@ const PERSISTENCE = {
     'history':         [],
     'historyPosition': 0,
   },
+  'Shell': {
+    'pwd': '/',
+  },
   'Apps': { '_commands': {}},
 };
 

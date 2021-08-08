@@ -237,14 +237,37 @@ const cmds = {
         });
     },
   },
+  'pwd': {
+    'description': 'Show current directory path',
+    'usage':       'pwd',
+    run (args, f, res) {
+      f.stdio.writeLine(PERSISTENCE.Shell.pwd);
+
+      return res(0);
+    },
+  },
+  'cd': {
+    'description': 'Change current directory',
+    'usage':       'cd <path>',
+    run (args, f, res) {
+      const path = require('path');
+
+      PERSISTENCE.Shell.pwd = path.join(PERSISTENCE.Shell.pwd, args);
+
+      return res(0);
+    },
+  },
   'ls': {
     'description': 'List files in directory',
-    'usage':       'ls /<drive>/<partition>',
+    'usage':       'ls [path]',
     run (args, f, res) {
       const fs = require('fs');
+      const path = require('path');
       // const filesize = require('../../utils/filesize');
 
-      fs.readdir(args, 'utf8', (err, list) => {
+      const pwd = path.join(PERSISTENCE.Shell.pwd, args);
+
+      fs.readdir(pwd, 'utf8', (err, list) => {
         if (err) {
           f.stdio.writeError(err);
 
@@ -271,17 +294,26 @@ const cmds = {
     'usage':       'cat <file>',
     run (args, f, res) {
       const fs = require('fs');
+      const path = require('path');
 
-      fs.readFile(args, 'utf8', (err, data) => {
-        if (err) {
-          f.stdio.writeError(err);
+      const pwd = path.join(PERSISTENCE.Shell.pwd, args);
 
-          return res(1);
-        }
-        f.stdio.write(data);
+      try {
+        fs.readFile(pwd, 'utf8', (err, data) => {
+          if (err) {
+            f.stdio.writeError(err);
 
-        return res(0);
-      });
+            return res(1);
+          }
+          f.stdio.write(data);
+
+          return res(0);
+        });
+      } catch (e) {
+        f.stdio.writeError(e);
+
+        return res(1);
+      }
     },
   },
   'mkdir': {
