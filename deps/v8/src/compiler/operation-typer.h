@@ -7,36 +7,68 @@
 
 #include "src/base/flags.h"
 #include "src/compiler/opcodes.h"
+#include "src/compiler/types.h"
+#include "src/objects/objects.h"
 
 namespace v8 {
 namespace internal {
 
+// Forward declarations.
 class Isolate;
 class RangeType;
-class Type;
-class TypeCache;
 class Zone;
 
 namespace compiler {
 
-class OperationTyper {
+// Forward declarations.
+class Operator;
+class Type;
+class TypeCache;
+
+class V8_EXPORT_PRIVATE OperationTyper {
  public:
-  OperationTyper(Isolate* isolate, Zone* zone);
+  OperationTyper(JSHeapBroker* broker, Zone* zone);
 
   // Typing Phi.
-  Type* Merge(Type* left, Type* right);
+  Type Merge(Type left, Type right);
 
-  Type* ToPrimitive(Type* type);
+  Type ToPrimitive(Type type);
+  Type ToNumber(Type type);
+  Type ToNumberConvertBigInt(Type type);
+  Type ToNumeric(Type type);
+  Type ToBoolean(Type type);
 
-  // Helpers for number operation typing.
-  Type* ToNumber(Type* type);
-  Type* WeakenRange(Type* current_range, Type* previous_range);
+  Type WeakenRange(Type current_range, Type previous_range);
 
-  Type* NumericAdd(Type* lhs, Type* rhs);
-  Type* NumericSubtract(Type* lhs, Type* rhs);
-  Type* NumericMultiply(Type* lhs, Type* rhs);
-  Type* NumericDivide(Type* lhs, Type* rhs);
-  Type* NumericModulus(Type* lhs, Type* rhs);
+// Unary operators.
+#define DECLARE_METHOD(Name) Type Name(Type type);
+  SIMPLIFIED_NUMBER_UNOP_LIST(DECLARE_METHOD)
+  SIMPLIFIED_BIGINT_UNOP_LIST(DECLARE_METHOD)
+  SIMPLIFIED_SPECULATIVE_NUMBER_UNOP_LIST(DECLARE_METHOD)
+  SIMPLIFIED_SPECULATIVE_BIGINT_UNOP_LIST(DECLARE_METHOD)
+  DECLARE_METHOD(ConvertReceiver)
+#undef DECLARE_METHOD
+
+// Numeric binary operators.
+#define DECLARE_METHOD(Name) Type Name(Type lhs, Type rhs);
+  SIMPLIFIED_NUMBER_BINOP_LIST(DECLARE_METHOD)
+  SIMPLIFIED_BIGINT_BINOP_LIST(DECLARE_METHOD)
+  SIMPLIFIED_SPECULATIVE_NUMBER_BINOP_LIST(DECLARE_METHOD)
+  SIMPLIFIED_SPECULATIVE_BIGINT_BINOP_LIST(DECLARE_METHOD)
+#undef DECLARE_METHOD
+
+  // Comparison operators.
+  Type SameValue(Type lhs, Type rhs);
+  Type SameValueNumbersOnly(Type lhs, Type rhs);
+  Type StrictEqual(Type lhs, Type rhs);
+
+  // Check operators.
+  Type CheckBounds(Type index, Type length);
+  Type CheckFloat64Hole(Type type);
+  Type CheckNumber(Type type);
+  Type ConvertTaggedHoleToUndefined(Type type);
+
+  Type TypeTypeGuard(const Operator* sigma_op, Type input);
 
   enum ComparisonOutcomeFlags {
     kComparisonTrue = 1,
@@ -44,37 +76,42 @@ class OperationTyper {
     kComparisonUndefined = 4
   };
 
-// Javascript binop typers.
-#define DECLARE_CASE(x) Type* Type##x(Type* lhs, Type* rhs);
-  JS_SIMPLE_BINOP_LIST(DECLARE_CASE)
-#undef DECLARE_CASE
-
-  Type* singleton_false() { return singleton_false_; }
-  Type* singleton_true() { return singleton_true_; }
-  Type* singleton_the_hole() { return singleton_the_hole_; }
+  Type singleton_false() const { return singleton_false_; }
+  Type singleton_true() const { return singleton_true_; }
+  Type singleton_the_hole() const { return singleton_the_hole_; }
 
  private:
-  typedef base::Flags<ComparisonOutcomeFlags> ComparisonOutcome;
+  using ComparisonOutcome = base::Flags<ComparisonOutcomeFlags>;
 
   ComparisonOutcome Invert(ComparisonOutcome);
-  Type* Invert(Type*);
-  Type* FalsifyUndefined(ComparisonOutcome);
+  Type Invert(Type);
+  Type FalsifyUndefined(ComparisonOutcome);
 
-  Type* Rangify(Type*);
-  Type* AddRanger(double lhs_min, double lhs_max, double rhs_min,
-                  double rhs_max);
-  Type* SubtractRanger(RangeType* lhs, RangeType* rhs);
-  Type* MultiplyRanger(Type* lhs, Type* rhs);
-  Type* ModulusRanger(RangeType* lhs, RangeType* rhs);
+  Type Rangify(Type);
+  Type AddRanger(double lhs_min, double lhs_max, double rhs_min,
+                 double rhs_max);
+  Type SubtractRanger(double lhs_min, double lhs_max, double rhs_min,
+                      double rhs_max);
+  Type MultiplyRanger(double lhs_min, double lhs_max, double rhs_min,
+                      double rhs_max);
 
-  Zone* zone() { return zone_; }
+  Zone* zone() const { return zone_; }
 
-  Zone* zone_;
-  TypeCache const& cache_;
+  Zone* const zone_;
+  TypeCache const* cache_;
 
-  Type* singleton_false_;
-  Type* singleton_true_;
-  Type* singleton_the_hole_;
+  Type infinity_;
+  Type minus_infinity_;
+  Type singleton_NaN_string_;
+  Type singleton_zero_string_;
+  Type singleton_false_;
+  Type singleton_true_;
+  Type singleton_the_hole_;
+  Type signed32ish_;
+  Type unsigned32ish_;
+  Type singleton_empty_string_;
+  Type truish_;
+  Type falsish_;
 };
 
 }  // namespace compiler

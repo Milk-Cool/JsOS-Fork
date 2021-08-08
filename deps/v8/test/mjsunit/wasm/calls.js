@@ -4,8 +4,7 @@
 
 // Flags: --expose-wasm
 
-load("test/mjsunit/wasm/wasm-constants.js");
-load("test/mjsunit/wasm/wasm-module-builder.js");
+d8.file.execute("test/mjsunit/wasm/wasm-module-builder.js");
 
 function assertModule(module, memsize) {
   // Check the module exists.
@@ -20,13 +19,16 @@ function assertModule(module, memsize) {
   assertFalse(mem === null);
   assertFalse(mem === 0);
   assertEquals("object", typeof mem);
-  assertTrue(mem instanceof ArrayBuffer);
+  assertTrue(mem instanceof WebAssembly.Memory);
+  var buf = mem.buffer;
+  assertTrue(buf instanceof ArrayBuffer);
+  assertEquals(memsize, buf.byteLength);
   for (var i = 0; i < 4; i++) {
     module.exports.memory = 0;  // should be ignored
-    assertEquals(mem, module.exports.memory);
+    mem.buffer = 0; // should be ignored
+    assertSame(mem, module.exports.memory);
+    assertSame(buf, mem.buffer);
   }
-
-  assertEquals(memsize, module.exports.memory.byteLength);
 }
 
 function assertFunction(module, func) {
@@ -40,28 +42,6 @@ function assertFunction(module, func) {
   return exp;
 }
 
-(function I64SubTest() {
-
-  var builder = new WasmModuleBuilder();
-
-  builder.addMemory(1, 1, true);
-  builder.addFunction("sub", kSig_l_ll)
-    .addBody([           // --
-      kExprGetLocal, 0,  // --
-      kExprGetLocal, 1,  // --
-      kExprI64Sub])      // --
-    .exportFunc()
-
-  var module = builder.instantiate();
-  assertModule(module, kPageSize);
-
-  // Check the properties of the sub function.
-  var sub = assertFunction(module, "sub");
-  assertEquals(-55, sub(33, 88));
-  assertEquals(-55555, sub(33333, 88888));
-  assertEquals(-5555555, sub(3333333, 8888888));
-})();
-
 (function SubTest() {
 
   var builder = new WasmModuleBuilder();
@@ -69,8 +49,8 @@ function assertFunction(module, func) {
   builder.addMemory(1, 1, true);
   builder.addFunction("sub", kSig_i_ii)
     .addBody([
-      kExprGetLocal, 0,             // --
-      kExprGetLocal, 1,             // --
+      kExprLocalGet, 0,             // --
+      kExprLocalGet, 1,             // --
       kExprI32Sub,                  // --
     ])
     .exportFunc()
@@ -111,8 +91,8 @@ function assertFunction(module, func) {
   builder.addMemory(kPages, kPages, true);
   builder.addFunction("flt", kSig_i_dd)
     .addBody([
-      kExprGetLocal, 0,     // --
-      kExprGetLocal, 1,     // --
+      kExprLocalGet, 0,     // --
+      kExprLocalGet, 1,     // --
       kExprF64Lt            // --
     ])                      // --
     .exportFunc();

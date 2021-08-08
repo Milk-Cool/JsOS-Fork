@@ -29,49 +29,37 @@
 
 #include <stdlib.h>
 
-#include "src/v8.h"
-
-#include "src/api.h"
-#include "src/codegen.h"
-#include "src/disassembler.h"
-#include "src/isolate.h"
-#include "src/log.h"
+#include "include/v8-profiler.h"
+#include "src/api/api-inl.h"
+#include "src/base/strings.h"
+#include "src/diagnostics/disassembler.h"
+#include "src/execution/frames.h"
+#include "src/execution/isolate.h"
+#include "src/execution/vm-state-inl.h"
+#include "src/init/v8.h"
+#include "src/objects/objects-inl.h"
 #include "src/profiler/tick-sample.h"
-#include "src/vm-state-inl.h"
 #include "test/cctest/cctest.h"
 #include "test/cctest/trace-extension.h"
 
-using v8::Function;
-using v8::Local;
-using v8::Object;
-using v8::Script;
-using v8::String;
-using v8::Value;
+namespace v8 {
+namespace internal {
 
-using v8::internal::byte;
-using v8::internal::Address;
-using v8::internal::Handle;
-using v8::internal::Isolate;
-using v8::internal::JSFunction;
-using v8::internal::TickSample;
-
-
-static bool IsAddressWithinFuncCode(JSFunction* function, Address addr) {
-  i::AbstractCode* code = function->abstract_code();
-  return code->contains(addr);
+static bool IsAddressWithinFuncCode(JSFunction function, Isolate* isolate,
+                                    void* addr) {
+  i::AbstractCode code = function.abstract_code(isolate);
+  return code.contains(reinterpret_cast<Address>(addr));
 }
 
-
 static bool IsAddressWithinFuncCode(v8::Local<v8::Context> context,
-                                    const char* func_name,
-                                    Address addr) {
+                                    Isolate* isolate, const char* func_name,
+                                    void* addr) {
   v8::Local<v8::Value> func =
       context->Global()->Get(context, v8_str(func_name)).ToLocalChecked();
   CHECK(func->IsFunction());
-  JSFunction* js_func = JSFunction::cast(*v8::Utils::OpenHandle(*func));
-  return IsAddressWithinFuncCode(js_func, addr);
+  JSFunction js_func = JSFunction::cast(*v8::Utils::OpenHandle(*func));
+  return IsAddressWithinFuncCode(js_func, isolate, addr);
 }
-
 
 // This C++ function is called as a constructor, to grab the frame pointer
 // from the calling function.  When this function runs, the stack contains
@@ -84,9 +72,8 @@ static void construct_call(const v8::FunctionCallbackInfo<v8::Value>& args) {
   frame_iterator.Advance();
   CHECK(frame_iterator.frame()->is_construct());
   frame_iterator.Advance();
-  if (i::FLAG_ignition) {
+  if (frame_iterator.frame()->type() == i::StackFrame::STUB) {
     // Skip over bytecode handler frame.
-    CHECK(frame_iterator.frame()->type() == i::StackFrame::STUB);
     frame_iterator.Advance();
   }
   i::StackFrame* calling_frame = frame_iterator.frame();
@@ -94,16 +81,21 @@ static void construct_call(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   v8::Local<v8::Context> context = args.GetIsolate()->GetCurrentContext();
 #if defined(V8_HOST_ARCH_32_BIT)
-  int32_t low_bits = reinterpret_cast<int32_t>(calling_frame->fp());
+  int32_t low_bits = static_cast<int32_t>(calling_frame->fp());
   args.This()
       ->Set(context, v8_str("low_bits"), v8_num(low_bits >> 1))
       .FromJust();
 #elif defined(V8_HOST_ARCH_64_BIT)
-  uint64_t fp = reinterpret_cast<uint64_t>(calling_frame->fp());
-  int32_t low_bits = static_cast<int32_t>(fp & 0xffffffff);
-  int32_t high_bits = static_cast<int32_t>(fp >> 32);
-  args.This()->Set(context, v8_str("low_bits"), v8_num(low_bits)).FromJust();
-  args.This()->Set(context, v8_str("high_bits"), v8_num(high_bits)).FromJust();
+  Address fp = calling_frame->fp();
+  uint64_t kSmiValueMask =
+      (static_cast<uintptr_t>(1) << (kSmiValueSize - 1)) - 1;
+  int32_t low_bits = static_cast<int32_t>(fp & kSmiValueMask);
+  fp >>= kSmiValueSize - 1;
+  int32_t high_bits = static_cast<int32_t>(fp & kSmiValueMask);
+  fp >>= kSmiValueSize - 1;
+  CHECK_EQ(fp, 0);  // Ensure all the bits are successfully encoded.
+  args.This()->Set(context, v8_str("low_bits"), v8_int(low_bits)).FromJust();
+  args.This()->Set(context, v8_str("high_bits"), v8_int(high_bits)).FromJust();
 #else
 #error Host architecture is neither 32-bit nor 64-bit.
 #endif
@@ -129,20 +121,20 @@ void CreateFramePointerGrabberConstructor(v8::Local<v8::Context> context,
 static void CreateTraceCallerFunction(v8::Local<v8::Context> context,
                                       const char* func_name,
                                       const char* trace_func_name) {
-  i::EmbeddedVector<char, 256> trace_call_buf;
-  i::SNPrintF(trace_call_buf,
-              "function %s() {"
-              "  fp = new FPGrabber();"
-              "  %s(fp.low_bits, fp.high_bits);"
-              "}",
-              func_name, trace_func_name);
+  v8::base::EmbeddedVector<char, 256> trace_call_buf;
+  v8::base::SNPrintF(trace_call_buf,
+                     "function %s() {"
+                     "  fp = new FPGrabber();"
+                     "  %s(fp.low_bits, fp.high_bits);"
+                     "}",
+                     func_name, trace_func_name);
 
   // Create the FPGrabber function, which grabs the caller's frame pointer
   // when called as a constructor.
   CreateFramePointerGrabberConstructor(context, "FPGrabber");
 
   // Compile the script.
-  CompileRun(trace_call_buf.start());
+  CompileRun(trace_call_buf.begin());
 }
 
 
@@ -153,13 +145,12 @@ static void CreateTraceCallerFunction(v8::Local<v8::Context> context,
 TEST(CFromJSStackTrace) {
   // BUG(1303) Inlining of JSFuncDoTrace() in JSTrace below breaks this test.
   i::FLAG_turbo_inlining = false;
-  i::FLAG_use_inlining = false;
 
   TickSample sample;
   i::TraceExtension::InitTraceEnv(&sample);
 
   v8::HandleScope scope(CcTest::isolate());
-  v8::Local<v8::Context> context = CcTest::NewContext(TRACE_EXTENSION);
+  v8::Local<v8::Context> context = CcTest::NewContext({TRACE_EXTENSION_ID});
   v8::Context::Scope context_scope(context);
 
   // Create global function JSFuncDoTrace which calls
@@ -182,15 +173,16 @@ TEST(CFromJSStackTrace) {
 
   CHECK(sample.has_external_callback);
   CHECK_EQ(FUNCTION_ADDR(i::TraceExtension::Trace),
-           sample.external_callback_entry);
+           reinterpret_cast<Address>(sample.external_callback_entry));
 
   // Stack tracing will start from the first JS function, i.e. "JSFuncDoTrace"
   unsigned base = 0;
   CHECK_GT(sample.frames_count, base + 1);
 
-  CHECK(IsAddressWithinFuncCode(
-      context, "JSFuncDoTrace", sample.stack[base + 0]));
-  CHECK(IsAddressWithinFuncCode(context, "JSTrace", sample.stack[base + 1]));
+  CHECK(IsAddressWithinFuncCode(context, CcTest::i_isolate(), "JSFuncDoTrace",
+                                sample.stack[base + 0]));
+  CHECK(IsAddressWithinFuncCode(context, CcTest::i_isolate(), "JSTrace",
+                                sample.stack[base + 1]));
 }
 
 
@@ -203,13 +195,12 @@ TEST(PureJSStackTrace) {
   // This test does not pass with inlining enabled since inlined functions
   // don't appear in the stack trace.
   i::FLAG_turbo_inlining = false;
-  i::FLAG_use_inlining = false;
 
   TickSample sample;
   i::TraceExtension::InitTraceEnv(&sample);
 
   v8::HandleScope scope(CcTest::isolate());
-  v8::Local<v8::Context> context = CcTest::NewContext(TRACE_EXTENSION);
+  v8::Local<v8::Context> context = CcTest::NewContext({TRACE_EXTENSION_ID});
   v8::Context::Scope context_scope(context);
 
   // Create global function JSFuncDoTrace which calls
@@ -237,25 +228,25 @@ TEST(PureJSStackTrace) {
 
   CHECK(sample.has_external_callback);
   CHECK_EQ(FUNCTION_ADDR(i::TraceExtension::JSTrace),
-           sample.external_callback_entry);
+           reinterpret_cast<Address>(sample.external_callback_entry));
 
   // Stack sampling will start from the caller of JSFuncDoTrace, i.e. "JSTrace"
   unsigned base = 0;
   CHECK_GT(sample.frames_count, base + 1);
-  CHECK(IsAddressWithinFuncCode(context, "JSTrace", sample.stack[base + 0]));
-  CHECK(IsAddressWithinFuncCode(
-      context, "OuterJSTrace", sample.stack[base + 1]));
+  CHECK(IsAddressWithinFuncCode(context, CcTest::i_isolate(), "JSTrace",
+                                sample.stack[base + 0]));
+  CHECK(IsAddressWithinFuncCode(context, CcTest::i_isolate(), "OuterJSTrace",
+                                sample.stack[base + 1]));
 }
 
-
-static void CFuncDoTrace(byte dummy_parameter) {
+static void CFuncDoTrace(byte dummy_param) {
   Address fp;
 #if V8_HAS_BUILTIN_FRAME_ADDRESS
   fp = reinterpret_cast<Address>(__builtin_frame_address(0));
 #elif V8_CC_MSVC
   // Approximate a frame pointer address. We compile without base pointers,
   // so we can't trust ebp/rbp.
-  fp = &dummy_parameter - 2 * sizeof(void*);  // NOLINT
+  fp = reinterpret_cast<Address>(&dummy_param) - 2 * sizeof(void*);
 #else
 #error Unexpected platform.
 #endif
@@ -280,7 +271,7 @@ TEST(PureCStackTrace) {
   TickSample sample;
   i::TraceExtension::InitTraceEnv(&sample);
   v8::HandleScope scope(CcTest::isolate());
-  v8::Local<v8::Context> context = CcTest::NewContext(TRACE_EXTENSION);
+  v8::Local<v8::Context> context = CcTest::NewContext({TRACE_EXTENSION_ID});
   v8::Context::Scope context_scope(context);
   // Check that sampler doesn't crash
   CHECK_EQ(10, CFunc(10));
@@ -289,7 +280,7 @@ TEST(PureCStackTrace) {
 
 TEST(JsEntrySp) {
   v8::HandleScope scope(CcTest::isolate());
-  v8::Local<v8::Context> context = CcTest::NewContext(TRACE_EXTENSION);
+  v8::Local<v8::Context> context = CcTest::NewContext({TRACE_EXTENSION_ID});
   v8::Context::Scope context_scope(context);
   CHECK(!i::TraceExtension::GetJsEntrySp());
   CompileRun("a = 1; b = a + 1;");
@@ -299,3 +290,6 @@ TEST(JsEntrySp) {
   CompileRun("js_entry_sp_level2();");
   CHECK(!i::TraceExtension::GetJsEntrySp());
 }
+
+}  // namespace internal
+}  // namespace v8

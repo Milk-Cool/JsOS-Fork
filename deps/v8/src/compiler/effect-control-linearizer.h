@@ -5,152 +5,36 @@
 #ifndef V8_COMPILER_EFFECT_CONTROL_LINEARIZER_H_
 #define V8_COMPILER_EFFECT_CONTROL_LINEARIZER_H_
 
-#include "src/compiler/common-operator.h"
-#include "src/compiler/node.h"
-#include "src/compiler/simplified-operator.h"
+#include <vector>
+
+#include "src/handles/handles.h"
 
 namespace v8 {
 namespace internal {
 
+class Map;
 class Zone;
 
 namespace compiler {
 
-class CommonOperatorBuilder;
-class SimplifiedOperatorBuilder;
-class MachineOperatorBuilder;
 class JSGraph;
-class Graph;
+class NodeOriginTable;
 class Schedule;
+class SourcePositionTable;
+class JSHeapBroker;
 
-class EffectControlLinearizer {
- public:
-  EffectControlLinearizer(JSGraph* graph, Schedule* schedule, Zone* temp_zone);
+V8_EXPORT_PRIVATE void LinearizeEffectControl(
+    JSGraph* graph, Schedule* schedule, Zone* temp_zone,
+    SourcePositionTable* source_positions, NodeOriginTable* node_origins,
+    PoisoningMitigationLevel poison_level, JSHeapBroker* broker);
 
-  void Run();
-
- private:
-  void ProcessNode(Node* node, Node** frame_state, Node** effect,
-                   Node** control);
-
-  struct ValueEffectControl {
-    Node* value;
-    Node* effect;
-    Node* control;
-    ValueEffectControl(Node* value, Node* effect, Node* control)
-        : value(value), effect(effect), control(control) {}
-  };
-
-  bool TryWireInStateEffect(Node* node, Node* frame_state, Node** effect,
-                            Node** control);
-  ValueEffectControl LowerChangeBitToTagged(Node* node, Node* effect,
-                                            Node* control);
-  ValueEffectControl LowerChangeInt31ToTaggedSigned(Node* node, Node* effect,
-                                                    Node* control);
-  ValueEffectControl LowerChangeInt32ToTagged(Node* node, Node* effect,
-                                              Node* control);
-  ValueEffectControl LowerChangeUint32ToTagged(Node* node, Node* effect,
-                                               Node* control);
-  ValueEffectControl LowerChangeFloat64ToTagged(Node* node, Node* effect,
-                                                Node* control);
-  ValueEffectControl LowerChangeTaggedSignedToInt32(Node* node, Node* effect,
-                                                    Node* control);
-  ValueEffectControl LowerChangeTaggedToBit(Node* node, Node* effect,
-                                            Node* control);
-  ValueEffectControl LowerChangeTaggedToInt32(Node* node, Node* effect,
-                                              Node* control);
-  ValueEffectControl LowerChangeTaggedToUint32(Node* node, Node* effect,
-                                               Node* control);
-  ValueEffectControl LowerCheckBounds(Node* node, Node* frame_state,
-                                      Node* effect, Node* control);
-  ValueEffectControl LowerCheckNumber(Node* node, Node* frame_state,
-                                      Node* effect, Node* control);
-  ValueEffectControl LowerCheckIf(Node* node, Node* frame_state, Node* effect,
-                                  Node* control);
-  ValueEffectControl LowerCheckTaggedPointer(Node* node, Node* frame_state,
-                                             Node* effect, Node* control);
-  ValueEffectControl LowerCheckTaggedSigned(Node* node, Node* frame_state,
-                                            Node* effect, Node* control);
-  ValueEffectControl LowerCheckedInt32Add(Node* node, Node* frame_state,
-                                          Node* effect, Node* control);
-  ValueEffectControl LowerCheckedInt32Sub(Node* node, Node* frame_state,
-                                          Node* effect, Node* control);
-  ValueEffectControl LowerCheckedUint32ToInt32(Node* node, Node* frame_state,
-                                               Node* effect, Node* control);
-  ValueEffectControl LowerCheckedFloat64ToInt32(Node* node, Node* frame_state,
-                                                Node* effect, Node* control);
-  ValueEffectControl LowerCheckedTaggedToInt32(Node* node, Node* frame_state,
-                                               Node* effect, Node* control);
-  ValueEffectControl LowerCheckedTaggedToFloat64(Node* node, Node* frame_state,
-                                                 Node* effect, Node* control);
-  ValueEffectControl LowerChangeTaggedToFloat64(Node* node, Node* effect,
-                                                Node* control);
-  ValueEffectControl LowerTruncateTaggedToFloat64(Node* node, Node* effect,
-                                                  Node* control);
-  ValueEffectControl LowerTruncateTaggedToWord32(Node* node, Node* effect,
-                                                 Node* control);
-  ValueEffectControl LowerObjectIsCallable(Node* node, Node* effect,
-                                           Node* control);
-  ValueEffectControl LowerObjectIsNumber(Node* node, Node* effect,
-                                         Node* control);
-  ValueEffectControl LowerObjectIsReceiver(Node* node, Node* effect,
-                                           Node* control);
-  ValueEffectControl LowerObjectIsSmi(Node* node, Node* effect, Node* control);
-  ValueEffectControl LowerObjectIsString(Node* node, Node* effect,
-                                         Node* control);
-  ValueEffectControl LowerObjectIsUndetectable(Node* node, Node* effect,
-                                               Node* control);
-  ValueEffectControl LowerStringFromCharCode(Node* node, Node* effect,
-                                             Node* control);
-  ValueEffectControl LowerCheckFloat64Hole(Node* node, Node* frame_state,
-                                           Node* effect, Node* control);
-  ValueEffectControl LowerCheckTaggedHole(Node* node, Node* frame_state,
-                                          Node* effect, Node* control);
-  ValueEffectControl LowerPlainPrimitiveToNumber(Node* node, Node* effect,
-                                                 Node* control);
-  ValueEffectControl LowerPlainPrimitiveToWord32(Node* node, Node* effect,
-                                                 Node* control);
-  ValueEffectControl LowerPlainPrimitiveToFloat64(Node* node, Node* effect,
-                                                  Node* control);
-
-  ValueEffectControl AllocateHeapNumberWithValue(Node* node, Node* effect,
-                                                 Node* control);
-  ValueEffectControl BuildCheckedFloat64ToInt32(Node* value, Node* frame_state,
-                                                Node* effect, Node* control);
-  ValueEffectControl BuildCheckedHeapNumberOrOddballToFloat64(Node* value,
-                                                              Node* frame_state,
-                                                              Node* effect,
-                                                              Node* control);
-
-  Node* ChangeInt32ToSmi(Node* value);
-  Node* ChangeUint32ToSmi(Node* value);
-  Node* ChangeInt32ToFloat64(Node* value);
-  Node* ChangeUint32ToFloat64(Node* value);
-  Node* ChangeSmiToInt32(Node* value);
-  Node* ObjectIsSmi(Node* value);
-
-  Node* SmiMaxValueConstant();
-  Node* SmiShiftBitsConstant();
-
-  Factory* factory() const;
-  Isolate* isolate() const;
-  JSGraph* jsgraph() const { return js_graph_; }
-  Graph* graph() const;
-  Schedule* schedule() const { return schedule_; }
-  Zone* temp_zone() const { return temp_zone_; }
-  CommonOperatorBuilder* common() const;
-  SimplifiedOperatorBuilder* simplified() const;
-  MachineOperatorBuilder* machine() const;
-
-  Operator const* ToNumberOperator();
-
-  JSGraph* js_graph_;
-  Schedule* schedule_;
-  Zone* temp_zone_;
-  RegionObservability region_observability_ = RegionObservability::kObservable;
-
-  SetOncePointer<Operator const> to_number_operator_;
-};
+// Performs effect control linearization lowering in addition to machine
+// lowering, producing a scheduled graph that is ready for instruction
+// selection.
+V8_EXPORT_PRIVATE void LowerToMachineSchedule(
+    JSGraph* graph, Schedule* schedule, Zone* temp_zone,
+    SourcePositionTable* source_positions, NodeOriginTable* node_origins,
+    PoisoningMitigationLevel poison_level, JSHeapBroker* broker);
 
 }  // namespace compiler
 }  // namespace internal

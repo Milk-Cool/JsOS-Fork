@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "src/basic-block-profiler.h"
+#include "src/diagnostics/basic-block-profiler.h"
+#include "src/objects/objects-inl.h"
 #include "test/cctest/cctest.h"
 #include "test/cctest/compiler/codegen-tester.h"
 
@@ -17,18 +18,31 @@ class BasicBlockProfilerTest : public RawMachineAssemblerTester<int32_t> {
     FLAG_turbo_profiling = true;
   }
 
-  void ResetCounts() { isolate()->basic_block_profiler()->ResetCounts(); }
+  void ResetCounts() {
+    BasicBlockProfiler::Get()->ResetCounts(CcTest::i_isolate());
+  }
 
   void Expect(size_t size, uint32_t* expected) {
-    CHECK(isolate()->basic_block_profiler());
     const BasicBlockProfiler::DataList* l =
-        isolate()->basic_block_profiler()->data_list();
+        BasicBlockProfiler::Get()->data_list();
     CHECK_NE(0, static_cast<int>(l->size()));
-    const BasicBlockProfiler::Data* data = l->back();
+    const BasicBlockProfilerData* data = l->back().get();
     CHECK_EQ(static_cast<int>(size), static_cast<int>(data->n_blocks()));
     const uint32_t* counts = data->counts();
     for (size_t i = 0; i < size; ++i) {
-      CHECK_EQ(static_cast<int>(expected[i]), static_cast<int>(counts[i]));
+      CHECK_EQ(expected[i], counts[i]);
+    }
+  }
+
+  void SetCounts(size_t size, uint32_t* new_counts) {
+    const BasicBlockProfiler::DataList* l =
+        BasicBlockProfiler::Get()->data_list();
+    CHECK_NE(0, static_cast<int>(l->size()));
+    BasicBlockProfilerData* data = l->back().get();
+    CHECK_EQ(static_cast<int>(size), static_cast<int>(data->n_blocks()));
+    uint32_t* counts = const_cast<uint32_t*>(data->counts());
+    for (size_t i = 0; i < size; ++i) {
+      counts[i] = new_counts[i];
     }
   }
 };
@@ -48,13 +62,13 @@ TEST(ProfileDiamond) {
 
   m.GenerateCode();
   {
-    uint32_t expected[] = {0, 0, 0, 0};
+    uint32_t expected[] = {0, 0, 0, 0, 0, 0};
     m.Expect(arraysize(expected), expected);
   }
 
   m.Call(0);
   {
-    uint32_t expected[] = {1, 1, 0, 1};
+    uint32_t expected[] = {1, 1, 1, 0, 0, 1};
     m.Expect(arraysize(expected), expected);
   }
 
@@ -62,13 +76,28 @@ TEST(ProfileDiamond) {
 
   m.Call(1);
   {
-    uint32_t expected[] = {1, 0, 1, 1};
+    uint32_t expected[] = {1, 0, 0, 1, 1, 1};
     m.Expect(arraysize(expected), expected);
   }
 
   m.Call(0);
   {
-    uint32_t expected[] = {2, 1, 1, 2};
+    uint32_t expected[] = {2, 1, 1, 1, 1, 2};
+    m.Expect(arraysize(expected), expected);
+  }
+
+  // Set the counters very high, to verify that they saturate rather than
+  // overflowing.
+  uint32_t near_overflow[] = {UINT32_MAX - 1, UINT32_MAX - 1, UINT32_MAX - 1,
+                              UINT32_MAX - 1, UINT32_MAX - 1, UINT32_MAX - 1};
+  m.SetCounts(arraysize(near_overflow), near_overflow);
+  m.Expect(arraysize(near_overflow), near_overflow);
+
+  m.Call(0);
+  m.Call(0);
+  {
+    uint32_t expected[] = {UINT32_MAX,     UINT32_MAX,     UINT32_MAX,
+                           UINT32_MAX - 1, UINT32_MAX - 1, UINT32_MAX};
     m.Expect(arraysize(expected), expected);
   }
 }
@@ -94,7 +123,7 @@ TEST(ProfileLoop) {
 
   m.GenerateCode();
   {
-    uint32_t expected[] = {0, 0, 0, 0};
+    uint32_t expected[] = {0, 0, 0, 0, 0, 0};
     m.Expect(arraysize(expected), expected);
   }
 
@@ -102,7 +131,7 @@ TEST(ProfileLoop) {
   for (size_t i = 0; i < arraysize(runs); i++) {
     m.ResetCounts();
     CHECK_EQ(1, m.Call(static_cast<int>(runs[i])));
-    uint32_t expected[] = {1, runs[i] + 1, runs[i], 1};
+    uint32_t expected[] = {1, runs[i] + 1, runs[i], runs[i], 1, 1};
     m.Expect(arraysize(expected), expected);
   }
 }

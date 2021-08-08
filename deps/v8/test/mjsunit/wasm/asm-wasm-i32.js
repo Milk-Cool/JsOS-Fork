@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Flags: --expose-wasm
+// Flags: --validate-asm --allow-natives-syntax
 
 function WrapInAsmModule(func) {
   function MODULE_NAME(stdlib) {
@@ -23,22 +23,19 @@ function WrapInAsmModule(func) {
   return eval("(" + source + ")");
 }
 
-function RunThreeWayTest(asmfunc, expect) {
+function RunAsmJsTest(asmfunc, expect) {
   var asm_source = asmfunc.toString();
   var nonasm_source = asm_source.replace(new RegExp("use asm"), "");
   var stdlib = {Math: Math};
 
-  var js_module = eval("(" + nonasm_source + ")")(stdlib);
   print("Testing " + asmfunc.name + " (js)...");
+  var js_module = eval("(" + nonasm_source + ")")(stdlib);
   expect(js_module);
 
   print("Testing " + asmfunc.name + " (asm.js)...");
   var asm_module = asmfunc(stdlib);
+  assertTrue(%IsAsmWasmCode(asmfunc));
   expect(asm_module);
-
-  print("Testing " + asmfunc.name + " (wasm)...");
-  var wasm_module = Wasm.instantiateModuleFromAsm(asm_source, stdlib);
-  expect(wasm_module);
 }
 
 const imul = Math.imul;
@@ -183,30 +180,27 @@ function i32_abs(a) {
   return Math_abs(a | 0) | 0;
 }
 
+function i32_neg(a) {
+  a = a | 0;
+  return (-a) | 0;
+}
+
+function i32_invert(a) {
+  a = a | 0;
+  return (~a) | 0;
+}
+
 var inputs = [
   0, 1, 2, 3, 4,
-  10, 20, 30, 31, 32, 33, 100, 2000,
-  30000, 400000, 5000000,
-  100000000, 2000000000,
   2147483646,
-  2147483647,
-  2147483648,
-  2147483649,
-  0x273a798e, 0x187937a3, 0xece3af83, 0x5495a16b, 0x0b668ecc, 0x11223344,
+  2147483647, // max positive int32
+  2147483648, // overflow max positive int32
   0x0000009e, 0x00000043, 0x0000af73, 0x0000116b, 0x00658ecc, 0x002b3b4c,
-  0x88776655, 0x70000000, 0x07200000, 0x7fffffff, 0x56123761, 0x7fffff00,
-  0x761c4761, 0x80000000, 0x88888888, 0xa0000000, 0xdddddddd, 0xe0000000,
-  0xeeeeeeee, 0xfffffffd, 0xf0000000, 0x007fffff, 0x003fffff, 0x001fffff,
-  0x000fffff, 0x0007ffff, 0x0003ffff, 0x0001ffff, 0x0000ffff, 0x00007fff,
-  0x00003fff, 0x00001fff, 0x00000fff, 0x000007ff, 0x000003ff, 0x000001ff,
+  0xeeeeeeee, 0xfffffffd, 0xf0000000, 0x007fffff, 0x0003ffff, 0x00001fff,
   -1, -2, -3, -4,
-  -10, -20, -30, -31, -32, -33, -100, -2000,
-  -30000, -400000, -5000000,
-  -100000000, -2000000000,
-  -2147483646,
   -2147483647,
-  -2147483648,
-  -2147483649,
+  -2147483648, // min negative int32
+  -2147483649, // overflow min negative int32
 ];
 
 var funcs = [
@@ -229,12 +223,14 @@ var funcs = [
   i32_gteq,
   i32_min,
   i32_max,
-  i32_abs
+  i32_abs,
+  i32_neg,
+  i32_invert,
 ];
 
 (function () {
   for (func of funcs) {
-    RunThreeWayTest(WrapInAsmModule(func), function (module) {
+    RunAsmJsTest(WrapInAsmModule(func), function (module) {
       if (func.length == 1) {
         for (a of inputs) {
           assertEquals(func(a), module.main(a));

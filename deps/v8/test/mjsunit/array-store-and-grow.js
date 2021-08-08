@@ -25,7 +25,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Flags: --allow-natives-syntax
+// Flags: --allow-natives-syntax --opt --no-always-opt
 
 // Verifies that the KeyedStoreIC correctly handles out-of-bounds stores
 // to an array that grow it by a single element. Test functions are
@@ -197,6 +197,7 @@ assertEquals(0.5, array_store_1([], 0, 0.5));
     a[b] = c;
   }
 
+  %PrepareFunctionForOptimization(grow_store);
   a = new Array(1);
   grow_store(a,1,1);
   grow_store(a,2,1);
@@ -204,8 +205,12 @@ assertEquals(0.5, array_store_1([], 0, 0.5));
   grow_store(a,10,1);
   assertOptimized(grow_store);
   grow_store(a,2048,1);
-  assertUnoptimized(grow_store);
-  %ClearFunctionTypeFeedback(grow_store);
+  // TODO(v8:11457) We don't currently support inlining element stores if there
+  // is a dictionary mode prototype on the prototype chain. Therefore, if
+  // v8_dict_property_const_tracking is enabled, the optimized code only
+  // contains a call to the IC handler and doesn't get deopted.
+  assertEquals(%IsDictPropertyConstTrackingEnabled(), isOptimized(grow_store));
+  %ClearFunctionFeedback(grow_store);
 })();
 
 
@@ -216,6 +221,7 @@ assertEquals(0.5, array_store_1([], 0, 0.5));
   function f(o, k, v) {
     o[k] = v;
   }
+  %PrepareFunctionForOptimization(f);
 
   a = [3.5];
   f(a, 1, "hi");  // DOUBLE packed array -> tagged packed grow
@@ -228,7 +234,7 @@ assertEquals(0.5, array_store_1([], 0, 0.5));
   // Should be a polymorphic grow stub. If not a grow stub it will deopt.
   f(new Array("hi"), 1, 3);
   assertOptimized(f);
-  %ClearFunctionTypeFeedback(f);
+  %ClearFunctionFeedback(f);
 })();
 
 
@@ -238,6 +244,7 @@ assertEquals(0.5, array_store_1([], 0, 0.5));
   function f(o, k, v) {
     o[k] = v;
   }
+  %PrepareFunctionForOptimization(f);
 
   a = [3.5];
   f(a, 0, "hi");  // DOUBLE packed array -> tagged packed grow
@@ -251,6 +258,10 @@ assertEquals(0.5, array_store_1([], 0, 0.5));
   assertOptimized(f);
   // An attempt to grow should cause deopt
   f(new Array("hi"), 1, 3);
-  assertUnoptimized(f);
-  %ClearFunctionTypeFeedback(f);
+  // TODO(v8:11457) We don't currently support inlining element stores if there
+  // is a dictionary mode prototype on the prototype chain. Therefore, if
+  // v8_dict_property_const_tracking is enabled, the optimized code only
+  // contains a call to the IC handler and doesn't get deopted.
+  assertEquals(%IsDictPropertyConstTrackingEnabled(), isOptimized(f));
+  %ClearFunctionFeedback(f);
 })();

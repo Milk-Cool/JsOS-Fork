@@ -5,13 +5,21 @@
 #ifndef V8_PARSING_REWRITER_H_
 #define V8_PARSING_REWRITER_H_
 
+#include "src/base/macros.h"
+#include "src/base/optional.h"
+#include "src/zone/zone-type-traits.h"
+
 namespace v8 {
 namespace internal {
 
 class AstValueFactory;
-class DoExpression;
+class Isolate;
 class ParseInfo;
 class Parser;
+class DeclarationScope;
+class Scope;
+class Statement;
+class VariableProxy;
 
 class Rewriter {
  public:
@@ -21,12 +29,14 @@ class Rewriter {
   //
   // Assumes code has been parsed and scopes have been analyzed.  Mutates the
   // AST, so the AST should not continue to be used in the case of failure.
-  static bool Rewrite(ParseInfo* info);
+  V8_EXPORT_PRIVATE static bool Rewrite(ParseInfo* info);
 
-  // Rewrite a list of statements, using the same rules as a top-level program,
-  // to  ensure identical behaviour of completion result.
-  static bool Rewrite(Parser* parser, DoExpression* expr,
-                      AstValueFactory* factory);
+  // Helper that does the actual re-writing. Extracted so REPL scripts can
+  // rewrite the body but then use the ".result" VariableProxy to resolve
+  // the async promise that is the result of running a REPL script.
+  // Returns base::nullopt in case something went wrong.
+  static base::Optional<VariableProxy*> RewriteBody(
+      ParseInfo* info, Scope* scope, ZonePtrList<Statement>* body);
 };
 
 

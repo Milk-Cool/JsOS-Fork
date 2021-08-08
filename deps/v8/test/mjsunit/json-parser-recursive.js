@@ -24,10 +24,13 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Flags: --stack-size=100
 
 var str = "[1]";
-for (var i = 0; i < 100000; i++) {
+for (var i = 0; i < 10000; i++) {
   str = "[1," + str + "]";
 }
 
-assertThrows(function() { JSON.parse(str); }, RangeError);
+// Make sure we don't overflow on very deeply nested JSON objects.
+JSON.parse(str);

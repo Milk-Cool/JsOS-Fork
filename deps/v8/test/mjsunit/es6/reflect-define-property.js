@@ -441,28 +441,6 @@ try {
 }
 
 
-// Test runtime calls to DefineAccessorPropertyUnchecked - make sure we don't
-// crash.
-try {
-  %DefineAccessorPropertyUnchecked(0, 0, 0, 0, 0);
-} catch (e) {
-  assertTrue(/illegal access/.test(e));
-}
-
-try {
-  %DefineAccessorPropertyUnchecked(null, null, null, null, null);
-} catch (e) {
-  assertTrue(/illegal access/.test(e));
-}
-
-// Defining properties null should fail even when we have
-// other allowed values
-try {
-  %DefineAccessorPropertyUnchecked(null, 'foo', func, null, 0);
-} catch (e) {
-  assertTrue(/illegal access/.test(e));
-}
-
 // Test that all possible differences in step 6 in DefineOwnProperty are
 // exercised, i.e., any difference in the given property descriptor and the
 // existing properties should not return true, but throw an error if the
@@ -942,7 +920,7 @@ for (var i = 0; i < 1000; i++) {
 assertEquals(999, o[999]);
 
 
-// Regression test: Bizzare behavior on non-strict arguments object.
+// Regression test: Bizarre behavior on non-strict arguments object.
 // TODO(yangguo): Tests disabled, needs investigation!
 /*
 (function test(arg0) {
@@ -988,6 +966,7 @@ assertTrue(
 obj2 = Object.create(obj1);
 obj3 = Object.create(obj2);
 
+%PrepareFunctionForOptimization(testGetterOnProto);
 testGetterOnProto(111, obj3);
 testGetterOnProto(111, obj3);
 %OptimizeFunctionOnNextCall(testGetterOnProto);
@@ -996,6 +975,7 @@ testGetterOnProto(111, obj3);
 
 assertTrue(Reflect.defineProperty(obj1, "quebec", { get: anotherGetter }));
 
+%PrepareFunctionForOptimization(testGetterOnProto);
 testGetterOnProto(222, obj3);
 testGetterOnProto(222, obj3);
 %OptimizeFunctionOnNextCall(testGetterOnProto);
@@ -1019,6 +999,7 @@ assertTrue(
 obj2 = Object.create(obj1);
 obj3 = Object.create(obj2);
 
+%PrepareFunctionForOptimization(testSetterOnProto);
 testSetterOnProto(445, obj3);
 testSetterOnProto(445, obj3);
 %OptimizeFunctionOnNextCall(testSetterOnProto);
@@ -1027,6 +1008,7 @@ testSetterOnProto(445, obj3);
 
 assertTrue(Reflect.defineProperty(obj1, "romeo", { set: anotherSetter }));
 
+%PrepareFunctionForOptimization(testSetterOnProto);
 testSetterOnProto(446, obj3);
 testSetterOnProto(446, obj3);
 %OptimizeFunctionOnNextCall(testSetterOnProto);
@@ -1045,6 +1027,7 @@ assertTrue(Reflect.defineProperty(obj1, "sierra",
 obj2 = Object.create(obj1);
 obj3 = Object.create(obj2);
 
+%PrepareFunctionForOptimization(testSetterOnProtoStrict);
 testSetterOnProtoStrict(obj3);
 testSetterOnProtoStrict(obj3);
 %OptimizeFunctionOnNextCall(testSetterOnProtoStrict);
@@ -1073,6 +1056,7 @@ function Assign(o) {
 
 function C() {}
 
+%PrepareFunctionForOptimization(Assign);
 Assign(new C);
 Assign(new C);
 %OptimizeFunctionOnNextCall(Assign);

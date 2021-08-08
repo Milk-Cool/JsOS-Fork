@@ -27,38 +27,33 @@
 
 #include <stdlib.h>
 
-#include "src/v8.h"
-
+#include "src/base/numbers/bignum.h"
+#include "src/base/numbers/diy-fp.h"
+#include "src/base/numbers/double.h"
+#include "src/base/numbers/strtod.h"
 #include "src/base/utils/random-number-generator.h"
-#include "src/bignum.h"
-#include "src/diy-fp.h"
-#include "src/double.h"
-#include "src/strtod.h"
+#include "src/init/v8.h"
 #include "test/cctest/cctest.h"
 
-using namespace v8::internal;
-
-static Vector<const char> StringToVector(const char* str) {
-  return Vector<const char>(str, StrLength(str));
-}
-
+namespace v8 {
+namespace base {
+namespace test_strtod {
 
 static double StrtodChar(const char* str, int exponent) {
-  return Strtod(StringToVector(str), exponent);
+  return Strtod(CStrVector(str), exponent);
 }
-
 
 TEST(Strtod) {
   Vector<const char> vector;
 
-  vector = StringToVector("0");
+  vector = CStrVector("0");
   CHECK_EQ(0.0, Strtod(vector, 1));
   CHECK_EQ(0.0, Strtod(vector, 2));
   CHECK_EQ(0.0, Strtod(vector, -2));
   CHECK_EQ(0.0, Strtod(vector, -999));
   CHECK_EQ(0.0, Strtod(vector, +999));
 
-  vector = StringToVector("1");
+  vector = CStrVector("1");
   CHECK_EQ(1.0, Strtod(vector, 0));
   CHECK_EQ(10.0, Strtod(vector, 1));
   CHECK_EQ(100.0, Strtod(vector, 2));
@@ -77,7 +72,7 @@ TEST(Strtod) {
   CHECK_EQ(1e-25, Strtod(vector, -25));
   CHECK_EQ(1e-39, Strtod(vector, -39));
 
-  vector = StringToVector("2");
+  vector = CStrVector("2");
   CHECK_EQ(2.0, Strtod(vector, 0));
   CHECK_EQ(20.0, Strtod(vector, 1));
   CHECK_EQ(200.0, Strtod(vector, 2));
@@ -96,7 +91,7 @@ TEST(Strtod) {
   CHECK_EQ(2e-25, Strtod(vector, -25));
   CHECK_EQ(2e-39, Strtod(vector, -39));
 
-  vector = StringToVector("9");
+  vector = CStrVector("9");
   CHECK_EQ(9.0, Strtod(vector, 0));
   CHECK_EQ(90.0, Strtod(vector, 1));
   CHECK_EQ(900.0, Strtod(vector, 2));
@@ -115,7 +110,7 @@ TEST(Strtod) {
   CHECK_EQ(9e-25, Strtod(vector, -25));
   CHECK_EQ(9e-39, Strtod(vector, -39));
 
-  vector = StringToVector("12345");
+  vector = CStrVector("12345");
   CHECK_EQ(12345.0, Strtod(vector, 0));
   CHECK_EQ(123450.0, Strtod(vector, 1));
   CHECK_EQ(1234500.0, Strtod(vector, 2));
@@ -137,7 +132,7 @@ TEST(Strtod) {
   CHECK_EQ(12345e-25, Strtod(vector, -25));
   CHECK_EQ(12345e-39, Strtod(vector, -39));
 
-  vector = StringToVector("12345678901234");
+  vector = CStrVector("12345678901234");
   CHECK_EQ(12345678901234.0, Strtod(vector, 0));
   CHECK_EQ(123456789012340.0, Strtod(vector, 1));
   CHECK_EQ(1234567890123400.0, Strtod(vector, 2));
@@ -159,7 +154,7 @@ TEST(Strtod) {
   CHECK_EQ(12345678901234e-25, Strtod(vector, -25));
   CHECK_EQ(12345678901234e-39, Strtod(vector, -39));
 
-  vector = StringToVector("123456789012345");
+  vector = CStrVector("123456789012345");
   CHECK_EQ(123456789012345.0, Strtod(vector, 0));
   CHECK_EQ(1234567890123450.0, Strtod(vector, 1));
   CHECK_EQ(12345678901234500.0, Strtod(vector, 2));
@@ -392,9 +387,7 @@ static int CompareBignumToDiyFp(const Bignum& bignum_digits,
   return Bignum::Compare(bignum, other);
 }
 
-
-static bool CheckDouble(Vector<const char> buffer,
-                        int exponent,
+static bool CheckDouble(Vector<const char> buffer, int exponent,
                         double to_check) {
   DiyFp lower_boundary;
   DiyFp upper_boundary;
@@ -425,7 +418,6 @@ static bool CheckDouble(Vector<const char> buffer,
   }
 }
 
-
 // Copied from v8.cc and adapted to make the function deterministic.
 static uint32_t DeterministicRandom() {
   // Random number generator using George Marsaglia's MWC algorithm.
@@ -434,8 +426,8 @@ static uint32_t DeterministicRandom() {
 
   // Initialization values don't have any special meaning. (They are the result
   // of two calls to rand().)
-  if (hi == 0) hi = 0xbfe166e7;
-  if (lo == 0) lo = 0x64d1c3c9;
+  if (hi == 0) hi = 0xBFE166E7;
+  if (lo == 0) lo = 0x64D1C3C9;
 
   // Mix the bits.
   hi = 36969 * (hi & 0xFFFF) + (hi >> 16);
@@ -449,7 +441,7 @@ static const int kShortStrtodRandomCount = 2;
 static const int kLargeStrtodRandomCount = 2;
 
 TEST(RandomStrtod) {
-  v8::base::RandomNumberGenerator rng;
+  base::RandomNumberGenerator rng;
   char buffer[kBufferSize];
   for (int length = 1; length < 15; length++) {
     for (int i = 0; i < kShortStrtodRandomCount; ++i) {
@@ -478,3 +470,7 @@ TEST(RandomStrtod) {
     }
   }
 }
+
+}  // namespace test_strtod
+}  // namespace base
+}  // namespace v8

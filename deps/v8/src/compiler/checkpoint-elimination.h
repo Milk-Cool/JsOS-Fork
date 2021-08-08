@@ -5,6 +5,8 @@
 #ifndef V8_COMPILER_CHECKPOINT_ELIMINATION_H_
 #define V8_COMPILER_CHECKPOINT_ELIMINATION_H_
 
+#include "src/base/compiler-specific.h"
+#include "src/common/globals.h"
 #include "src/compiler/graph-reducer.h"
 
 namespace v8 {
@@ -12,16 +14,18 @@ namespace internal {
 namespace compiler {
 
 // Performs elimination of redundant checkpoints within the graph.
-class CheckpointElimination final : public AdvancedReducer {
+class V8_EXPORT_PRIVATE CheckpointElimination final
+    : public NON_EXPORTED_BASE(AdvancedReducer) {
  public:
   explicit CheckpointElimination(Editor* editor);
-  ~CheckpointElimination() final {}
+  ~CheckpointElimination() final = default;
+
+  const char* reducer_name() const override { return "CheckpointElimination"; }
 
   Reduction Reduce(Node* node) final;
 
  private:
   Reduction ReduceCheckpoint(Node* node);
-  Reduction ReduceReturn(Node* node);
 };
 
 }  // namespace compiler

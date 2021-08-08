@@ -2,26 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8_WASM_JS_H_
-#define V8_WASM_JS_H_
+#if !V8_ENABLE_WEBASSEMBLY
+#error This header should only be included if WebAssembly is enabled.
+#endif  // !V8_ENABLE_WEBASSEMBLY
 
-#ifndef V8_SHARED
-#include "src/allocation.h"
-#include "src/base/hashmap.h"
-#else
-#include "include/v8.h"
-#include "src/base/compiler-specific.h"
-#endif  // !V8_SHARED
+#ifndef V8_WASM_WASM_JS_H_
+#define V8_WASM_WASM_JS_H_
+
+#include "src/common/globals.h"
 
 namespace v8 {
 namespace internal {
-// Exposes a WASM API to JavaScript through the V8 API.
+class Context;
+template <typename T>
+class Handle;
+
+namespace wasm {
+class StreamingDecoder;
+}  // namespace wasm
+
+// Exposes a WebAssembly API to JavaScript through the V8 API.
 class WasmJs {
  public:
-  static void Install(Isolate* isolate, Handle<JSGlobalObject> global_object);
-  static void InstallWasmFunctionMap(Isolate* isolate, Handle<Context> context);
+  V8_EXPORT_PRIVATE static void Install(Isolate* isolate,
+                                        bool exposed_on_global_object);
+
+  V8_EXPORT_PRIVATE static void InstallConditionalFeatures(
+      Isolate* isolate, Handle<Context> context);
 };
 
 }  // namespace internal
 }  // namespace v8
-#endif
+
+#endif  // V8_WASM_WASM_JS_H_

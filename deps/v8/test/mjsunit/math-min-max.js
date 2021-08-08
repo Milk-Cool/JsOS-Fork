@@ -55,11 +55,11 @@ var ZERO = (function() {
 assertEquals(0, ZERO);
 assertEquals(Infinity, 1/ZERO);
 assertEquals(-Infinity, 1/-ZERO);
-// Here we would like to have assertFalse(%_IsSmi(ZERO));  This is, however,
+// Here we would like to have assertFalse(%IsSmi(ZERO));  This is, however,
 // unreliable, since a new space exhaustion at a critical moment could send
 // us into the runtime system, which would quite legitimately put a Smi zero
 // here.
-assertFalse(%_IsSmi(-ZERO));
+assertFalse(%IsSmi(-ZERO));
 
 var o = {};
 o.valueOf = function() { return 1; };
@@ -117,6 +117,7 @@ assertEquals(Infinity, 1/Math.max(ZERO, -0));
 assertEquals(Infinity, 1/Math.max(-0, ZERO));
 
 function run(crankshaft_test) {
+  %PrepareFunctionForOptimization(crankshaft_test);
   crankshaft_test(1);
   crankshaft_test(1);
   %OptimizeFunctionOnNextCall(crankshaft_test);
@@ -184,6 +185,7 @@ function f(o) {
   return Math.min(o.a, o.b);
 }
 
+%PrepareFunctionForOptimization(f);
 assertEquals(1, f(o));
 assertEquals(1, f(o));
 %OptimizeFunctionOnNextCall(f);

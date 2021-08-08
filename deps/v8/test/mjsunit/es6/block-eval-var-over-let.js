@@ -61,6 +61,23 @@ assertDoesNotThrow(function() {
   eval('var x');
 });
 
+// The same should work for lexical function declarations:
+// If the const is in its own block scope, with the eval, throws
+assertThrows(function() {
+  {
+    function x() {}
+    eval('var x');
+  }
+}, SyntaxError);
+
+// If the eval is in its own block scope, throws
+assertThrows(function() {
+  {
+    function y() {}
+    { eval('var y'); }
+  }
+}, SyntaxError);
+
 // In global scope
 let caught = false;
 try {
@@ -124,18 +141,15 @@ try {
 }
 assertTrue(caught);
 
-// TODO(littledan): Hoisting x out of the block should be
-// prevented in this case BUG(v8:4479)
-caught = false
-try {
-  (function() {
-    {
-      let x = 1;
-      eval('{ function x() {} }');
-    }
-  })();
-} catch (e) {
-  caught = true;
-}
-// TODO(littledan): switch to assertTrue when bug is fixed
-assertTrue(caught);
+// See ES#sec-web-compat-evaldeclarationinstantiation. Sloppy block functions
+// inside of blocks in eval behave similar to regular sloppy block function
+// hoisting: the var declaration on the function level is only created if
+// it would not cause a syntax error. A masking let would cause a conflicting
+// var declaration syntax error, and hence the var isn't introduced.
+(function() {
+  {
+    let x = 1;
+    eval('{ function x() {} }');
+    assertEquals(1, x);
+  }
+})();

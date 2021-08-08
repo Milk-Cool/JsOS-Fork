@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 // Test for conflicting variable bindings.
+// Stress-testing this test is very slow and provides no useful coverage.
+// Flags: --nostress-opt --noalways-opt
 
 function CheckException(e) {
   var string = e.toString();
@@ -169,9 +171,6 @@ for (var v = 0; v < varbinds.length; ++v) {
 for (var v = 0; v < varbinds.length; ++v) {
   TestNoConflict('(function (x) {' + varbinds[v] + '})();');
 }
-
-// Test conflicting catch/function bindings.
-TestNoConflict('try {} catch(x) {' + funbind + '}');
 
 // Test conflicting parameter/function bindings.
 TestNoConflict('(function (x) {' + funbind + '})();');

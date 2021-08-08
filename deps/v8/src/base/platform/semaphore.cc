@@ -5,12 +5,9 @@
 #include "src/base/platform/semaphore.h"
 
 #if V8_OS_MACOSX
-#include <mach/mach_init.h>
-#include <mach/task.h>
-#endif
-
-#if V8_OS_RUNTIMEJS
-#include <kernel/cpu.h>
+#include <dispatch/dispatch.h>
+#elif V8_OS_WIN
+#include <windows.h>
 #endif
 
 #include <errno.h>
@@ -25,72 +22,29 @@ namespace base {
 #if V8_OS_MACOSX
 
 Semaphore::Semaphore(int count) {
-  kern_return_t result = semaphore_create(
-      mach_task_self(), &native_handle_, SYNC_POLICY_FIFO, count);
-  DCHECK_EQ(KERN_SUCCESS, result);
-  USE(result);
+  native_handle_ = dispatch_semaphore_create(count);
+  DCHECK(native_handle_);
 }
 
+Semaphore::~Semaphore() { dispatch_release(native_handle_); }
 
-Semaphore::~Semaphore() {
-  kern_return_t result = semaphore_destroy(mach_task_self(), native_handle_);
-  DCHECK_EQ(KERN_SUCCESS, result);
-  USE(result);
-}
-
-void Semaphore::Signal() {
-  kern_return_t result = semaphore_signal(native_handle_);
-  DCHECK_EQ(KERN_SUCCESS, result);
-  USE(result);
-}
-
+void Semaphore::Signal() { dispatch_semaphore_signal(native_handle_); }
 
 void Semaphore::Wait() {
-  while (true) {
-    kern_return_t result = semaphore_wait(native_handle_);
-    if (result == KERN_SUCCESS) return;  // Semaphore was signalled.
-    DCHECK_EQ(KERN_ABORTED, result);
-  }
+  dispatch_semaphore_wait(native_handle_, DISPATCH_TIME_FOREVER);
 }
 
 
 bool Semaphore::WaitFor(const TimeDelta& rel_time) {
-  TimeTicks now = TimeTicks::Now();
-  TimeTicks end = now + rel_time;
-  while (true) {
-    mach_timespec_t ts;
-    if (now >= end) {
-      // Return immediately if semaphore was not signalled.
-      ts.tv_sec = 0;
-      ts.tv_nsec = 0;
-    } else {
-      ts = (end - now).ToMachTimespec();
-    }
-    kern_return_t result = semaphore_timedwait(native_handle_, ts);
-    if (result == KERN_SUCCESS) return true;  // Semaphore was signalled.
-    if (result == KERN_OPERATION_TIMED_OUT) return false;  // Timeout.
-    DCHECK_EQ(KERN_ABORTED, result);
-    now = TimeTicks::Now();
-  }
+  dispatch_time_t timeout =
+      dispatch_time(DISPATCH_TIME_NOW, rel_time.InNanoseconds());
+  return dispatch_semaphore_wait(native_handle_, timeout) == 0;
 }
 
 #elif V8_OS_POSIX
 
 Semaphore::Semaphore(int count) {
-  // The sem_init() does not check for alignment of the native handle.
-  // Unaligned native handle can later cause a failure in semaphore signal.
-  // Check the alignment here to catch the failure earlier.
-  // Context: crbug.com/605349.
-#if V8_OS_AIX
-  // On aix sem_t is of type int
-  const uintptr_t kSemaphoreAlignmentMask = sizeof(int) - 1;
-#else
-  const uintptr_t kSemaphoreAlignmentMask = sizeof(void*) - 1;
-#endif
-  CHECK_EQ(
-      0, reinterpret_cast<uintptr_t>(&native_handle_) &
-      kSemaphoreAlignmentMask);
-  DCHECK(count >= 0);
+  DCHECK_GE(count, 0);
   int result = sem_init(&native_handle_, 0, count);
   DCHECK_EQ(0, result);
   USE(result);
@@ -108,7 +62,9 @@ void Semaphore::Signal() {
   // This check may fail with <libc-2.21, which we use on the try bots, if the
   // semaphore is destroyed while sem_post is still executed. A work around is
   // to extend the lifetime of the semaphore.
-  CHECK_EQ(0, result);
+  if (result != 0) {
+    FATAL("Error when signaling semaphore, errno: %d", errno);
+  }
 }
 
 
@@ -124,17 +80,6 @@ void Semaphore::Wait() {
 
 
 bool Semaphore::WaitFor(const TimeDelta& rel_time) {
-#if V8_OS_NACL
-  // PNaCL doesn't support sem_timedwait, do ugly busy waiting.
-  ElapsedTimer timer;
-  timer.Start();
-  do {
-    int result = sem_trywait(&native_handle_);
-    if (result == 0) return true;
-    DCHECK(errno == EAGAIN || errno == EINTR);
-  } while (!timer.HasExpired(rel_time));
-  return false;
-#else
   // Compute the time for end of timeout.
   const Time time = Time::NowFromSystemTime() + rel_time;
   const struct timespec ts = time.ToTimespec();
@@ -158,15 +103,14 @@ bool Semaphore::WaitFor(const TimeDelta& rel_time) {
     DCHECK_EQ(-1, result);
     DCHECK_EQ(EINTR, errno);
   }
-#endif
 }
 
 #elif V8_OS_WIN
 
 Semaphore::Semaphore(int count) {
-  DCHECK(count >= 0);
-  native_handle_ = ::CreateSemaphoreA(NULL, count, 0x7fffffff, NULL);
-  DCHECK(native_handle_ != NULL);
+  DCHECK_GE(count, 0);
+  native_handle_ = ::CreateSemaphoreA(nullptr, count, 0x7FFFFFFF, nullptr);
+  DCHECK_NOT_NULL(native_handle_);
 }
 
 
@@ -215,29 +159,19 @@ bool Semaphore::WaitFor(const TimeDelta& rel_time) {
   }
 }
 
-#elif V8_OS_RUNTIMEJS
+#elif V8_OS_STARBOARD
 
-Semaphore::Semaphore(int count) : native_handle_(count) {
-  DCHECK(count >= 0);
-}
+Semaphore::Semaphore(int count) : native_handle_(count) { DCHECK_GE(count, 0); }
 
+Semaphore::~Semaphore() {}
 
-Semaphore::~Semaphore() {
-}
+void Semaphore::Signal() { native_handle_.Put(); }
 
-
-void Semaphore::Signal() {
-  native_handle_.signal();
-}
-
-
-void Semaphore::Wait() {
-  native_handle_.wait();
-}
-
+void Semaphore::Wait() { native_handle_.Take(); }
 
 bool Semaphore::WaitFor(const TimeDelta& rel_time) {
-  return native_handle_.timed_wait(rel_time.InMicroseconds());
+  SbTime microseconds = rel_time.InMicroseconds();
+  return native_handle_.TakeWait(microseconds);
 }
 
 #endif  // V8_OS_MACOSX

@@ -5,57 +5,75 @@
 #ifndef V8_COMPILER_SIMPLIFIED_LOWERING_H_
 #define V8_COMPILER_SIMPLIFIED_LOWERING_H_
 
-#include "src/base/flags.h"
 #include "src/compiler/js-graph.h"
 #include "src/compiler/machine-operator.h"
+#include "src/compiler/node-properties.h"
 #include "src/compiler/node.h"
 #include "src/compiler/simplified-operator.h"
 
 namespace v8 {
 namespace internal {
 
-// Forward declarations.
-class TypeCache;
-
+class TickCounter;
 
 namespace compiler {
 
 // Forward declarations.
+class NodeOriginTable;
+class ObserveNodeManager;
 class RepresentationChanger;
 class RepresentationSelector;
 class SourcePositionTable;
+class TypeCache;
 
-class SimplifiedLowering final {
+class V8_EXPORT_PRIVATE SimplifiedLowering final {
  public:
-  enum Flag { kNoFlag = 0u, kTypeFeedbackEnabled = 1u << 0 };
-  typedef base::Flags<Flag> Flags;
-  SimplifiedLowering(JSGraph* jsgraph, Zone* zone,
-                     SourcePositionTable* source_positions,
-                     Flags flags = kNoFlag);
-  ~SimplifiedLowering() {}
+  SimplifiedLowering(JSGraph* jsgraph, JSHeapBroker* broker, Zone* zone,
+                     SourcePositionTable* source_position,
+                     NodeOriginTable* node_origins,
+                     PoisoningMitigationLevel poisoning_level,
+                     TickCounter* tick_counter, Linkage* linkage,
+                     ObserveNodeManager* observe_node_manager = nullptr);
+  ~SimplifiedLowering() = default;
 
   void LowerAllNodes();
 
-  void DoJSToNumberTruncatesToFloat64(Node* node,
-                                      RepresentationSelector* selector);
-  void DoJSToNumberTruncatesToWord32(Node* node,
-                                     RepresentationSelector* selector);
-  // TODO(turbofan): The representation can be removed once the result of the
-  // representation analysis is stored in the node bounds.
-  void DoLoadBuffer(Node* node, MachineRepresentation rep,
-                    RepresentationChanger* changer);
-  void DoStoreBuffer(Node* node);
-  void DoShift(Node* node, Operator const* op, Type* rhs_type);
-
-  Flags flags() const { return flags_; }
+  void DoMax(Node* node, Operator const* op, MachineRepresentation rep);
+  void DoMin(Node* node, Operator const* op, MachineRepresentation rep);
+  void DoJSToNumberOrNumericTruncatesToFloat64(
+      Node* node, RepresentationSelector* selector);
+  void DoJSToNumberOrNumericTruncatesToWord32(Node* node,
+                                              RepresentationSelector* selector);
+  void DoIntegral32ToBit(Node* node);
+  void DoOrderedNumberToBit(Node* node);
+  void DoNumberToBit(Node* node);
+  void DoIntegerToUint8Clamped(Node* node);
+  void DoNumberToUint8Clamped(Node* node);
+  void DoSigned32ToUint8Clamped(Node* node);
+  void DoUnsigned32ToUint8Clamped(Node* node);
 
  private:
+  // The purpose of this nested class is to hide method
+  // v8::internal::compiler::NodeProperties::ChangeOp which should not be
+  // directly used by code in SimplifiedLowering.
+  // SimplifiedLowering code should call SimplifiedLowering::ChangeOp instead,
+  // in order to notify the changes to ObserveNodeManager and support the
+  // %ObserveNode intrinsic.
+  class NodeProperties : public compiler::NodeProperties {
+    static void ChangeOp(Node* node, const Operator* new_op) { UNREACHABLE(); }
+  };
+  void ChangeOp(Node* node, const Operator* new_op);
+
   JSGraph* const jsgraph_;
+  JSHeapBroker* broker_;
   Zone* const zone_;
-  TypeCache const& type_cache_;
+  TypeCache const* type_cache_;
   SetOncePointer<Node> to_number_code_;
+  SetOncePointer<Node> to_number_convert_big_int_code_;
+  SetOncePointer<Node> to_numeric_code_;
   SetOncePointer<Operator const> to_number_operator_;
-  Flags flags_;
+  SetOncePointer<Operator const> to_number_convert_big_int_operator_;
+  SetOncePointer<Operator const> to_numeric_operator_;
 
   // TODO(danno): SimplifiedLowering shouldn't know anything about the source
   // positions table, but must for now since there currently is no other way to
@@ -63,12 +81,17 @@ class SimplifiedLowering final {
   // lowering. Once this phase becomes a vanilla reducer, it should get source
   // position information via the SourcePositionWrapper like all other reducers.
   SourcePositionTable* source_positions_;
+  NodeOriginTable* node_origins_;
 
-  Node* Float64Ceil(Node* const node);
-  Node* Float64Floor(Node* const node);
+  PoisoningMitigationLevel poisoning_level_;
+
+  TickCounter* const tick_counter_;
+  Linkage* const linkage_;
+
+  ObserveNodeManager* const observe_node_manager_;
+
   Node* Float64Round(Node* const node);
   Node* Float64Sign(Node* const node);
-  Node* Float64Trunc(Node* const node);
   Node* Int32Abs(Node* const node);
   Node* Int32Div(Node* const node);
   Node* Int32Mod(Node* const node);
@@ -77,7 +100,11 @@ class SimplifiedLowering final {
   Node* Uint32Mod(Node* const node);
 
   Node* ToNumberCode();
+  Node* ToNumberConvertBigIntCode();
+  Node* ToNumericCode();
   Operator const* ToNumberOperator();
+  Operator const* ToNumberConvertBigIntOperator();
+  Operator const* ToNumericOperator();
 
   friend class RepresentationSelector;
 
@@ -88,6 +115,7 @@ class SimplifiedLowering final {
   CommonOperatorBuilder* common() { return jsgraph()->common(); }
   MachineOperatorBuilder* machine() { return jsgraph()->machine(); }
   SimplifiedOperatorBuilder* simplified() { return jsgraph()->simplified(); }
+  Linkage* linkage() { return linkage_; }
 };
 
 }  // namespace compiler
