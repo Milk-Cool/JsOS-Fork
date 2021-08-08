@@ -1,115 +1,340 @@
 cmake_minimum_required(VERSION 3.0)
 
 add_library(v8 STATIC
-                    v8/src/accessors.cc
-                    v8/src/address-map.cc
-                    v8/src/allocation.cc
-                    v8/src/allocation-site-scopes.cc
-                    v8/src/api-experimental.cc
-                    v8/src/api.cc
-                    v8/src/api-arguments.cc
-                    v8/src/api-natives.cc
-                    v8/src/arguments.cc
+                    v8/src/api/api-arguments.cc
+                    v8/src/api/api-natives.cc
+                    v8/src/api/api.cc
                     v8/src/asmjs/asm-js.cc
+                    v8/src/asmjs/asm-parser.cc
+                    v8/src/asmjs/asm-scanner.cc
                     v8/src/asmjs/asm-types.cc
-                    v8/src/asmjs/asm-wasm-builder.cc
-                    v8/src/asmjs/typing-asm.cc
-                    v8/src/assembler.cc
-                    v8/src/assert-scope.cc
-                    v8/src/ast/ast-expression-rewriter.cc
-                    v8/src/ast/ast-expression-visitor.cc
-                    v8/src/ast/ast-literal-reindexer.cc
-                    v8/src/ast/ast-numbering.cc
+                    v8/src/ast/ast-function-literal-id-reindexer.cc
                     v8/src/ast/ast-value-factory.cc
                     v8/src/ast/ast.cc
                     v8/src/ast/modules.cc
                     v8/src/ast/prettyprinter.cc
-                    v8/src/ast/scopeinfo.cc
                     v8/src/ast/scopes.cc
+                    v8/src/ast/source-range-ast-visitor.cc
                     v8/src/ast/variables.cc
-                    v8/src/background-parsing-task.cc
-                    v8/src/bailout-reason.cc
-                    v8/src/basic-block-profiler.cc
-                    v8/src/bignum-dtoa.cc
-                    v8/src/bignum.cc
-                    v8/src/bit-vector.cc
-                    v8/src/bootstrapper.cc
-                    v8/src/builtins.cc
-                    v8/src/cached-powers.cc
-                    v8/src/cancelable-task.cc
-                    v8/src/char-predicates.cc
-                    v8/src/code-factory.cc
-                    v8/src/code-stub-assembler.cc
-                    v8/src/code-stubs.cc
-                    v8/src/code-stubs-hydrogen.cc
-                    v8/src/codegen.cc
-                    v8/src/compilation-cache.cc
-                    v8/src/compilation-dependencies.cc
-                    v8/src/compilation-statistics.cc
+                    v8/src/base/bits.cc
+                    v8/src/base/bounded-page-allocator.cc
+                    v8/src/base/cpu.cc
+                    v8/src/base/debug/stack_trace.cc
+                    v8/src/base/debug/stack_trace_android.cc
+                    v8/src/base/debug/stack_trace_fuchsia.cc
+                    v8/src/base/debug/stack_trace_posix.cc
+                    v8/src/base/debug/stack_trace_win.cc
+                    v8/src/base/division-by-constant.cc
+                    v8/src/base/file-utils.cc
+                    v8/src/base/functional.cc
+                    v8/src/base/ieee754.cc
+                    v8/src/base/logging.cc
+                    v8/src/base/numbers/bignum-dtoa.cc
+                    v8/src/base/numbers/bignum.cc
+                    v8/src/base/numbers/cached-powers.cc
+                    v8/src/base/numbers/diy-fp.cc
+                    v8/src/base/numbers/dtoa.cc
+                    v8/src/base/numbers/fast-dtoa.cc
+                    v8/src/base/numbers/fixed-dtoa.cc
+                    v8/src/base/numbers/strtod.cc
+                    v8/src/base/once.cc
+                    v8/src/base/page-allocator.cc
+                    v8/src/base/platform/condition-variable.cc
+                    v8/src/base/platform/mutex.cc
+                    v8/src/base/platform/platform-aix.cc
+                    v8/src/base/platform/platform-cygwin.cc
+                    v8/src/base/platform/platform-freebsd.cc
+                    v8/src/base/platform/platform-fuchsia.cc
+                    v8/src/base/platform/platform-linux.cc
+                    v8/src/base/platform/platform-macos.cc
+                    v8/src/base/platform/platform-openbsd.cc
+                    v8/src/base/platform/platform-posix-time.cc
+                    v8/src/base/platform/platform-posix.cc
+                    v8/src/base/platform/platform-qnx.cc
+                    v8/src/base/platform/platform-solaris.cc
+                    v8/src/base/platform/platform-starboard.cc
+                    v8/src/base/platform/platform-win32.cc
+                    v8/src/base/platform/semaphore.cc
+                    v8/src/base/platform/time.cc
+                    v8/src/base/region-allocator.cc
+                    v8/src/base/sanitizer/lsan-page-allocator.cc
+                    v8/src/base/strings.cc
+                    v8/src/base/sys-info.cc
+                    v8/src/base/ubsan.cc
+                    v8/src/base/utils/random-number-generator.cc
+                    v8/src/base/vlq-base64.cc
+                    v8/src/baseline/baseline-batch-compiler.cc
+                    v8/src/baseline/baseline-compiler.cc
+                    v8/src/baseline/baseline.cc
+                    v8/src/baseline/bytecode-offset-iterator.cc
+                    v8/src/bigint/bigint-internal.cc
+                    v8/src/bigint/div-barrett.cc
+                    v8/src/bigint/div-burnikel.cc
+                    v8/src/bigint/div-helpers.cc
+                    v8/src/bigint/div-schoolbook.cc
+                    v8/src/bigint/fromstring.cc
+                    v8/src/bigint/mul-fft.cc
+                    v8/src/bigint/mul-karatsuba.cc
+                    v8/src/bigint/mul-schoolbook.cc
+                    v8/src/bigint/mul-toom.cc
+                    v8/src/bigint/tostring.cc
+                    v8/src/bigint/vector-arithmetic.cc
+                    v8/src/builtins/accessors.cc
+                    v8/src/builtins/arm/builtins-arm.cc
+                    v8/src/builtins/arm64/builtins-arm64.cc
+                    v8/src/builtins/builtins-api.cc
+                    v8/src/builtins/builtins-array-gen.cc
+                    v8/src/builtins/builtins-array.cc
+                    v8/src/builtins/builtins-arraybuffer.cc
+                    v8/src/builtins/builtins-async-function-gen.cc
+                    v8/src/builtins/builtins-async-gen.cc
+                    v8/src/builtins/builtins-async-generator-gen.cc
+                    v8/src/builtins/builtins-async-iterator-gen.cc
+                    v8/src/builtins/builtins-async-module.cc
+                    v8/src/builtins/builtins-bigint-gen.cc
+                    v8/src/builtins/builtins-bigint.cc
+                    v8/src/builtins/builtins-call-gen.cc
+                    v8/src/builtins/builtins-callsite.cc
+                    v8/src/builtins/builtins-collections-gen.cc
+                    v8/src/builtins/builtins-collections.cc
+                    v8/src/builtins/builtins-console.cc
+                    v8/src/builtins/builtins-constructor-gen.cc
+                    v8/src/builtins/builtins-conversion-gen.cc
+                    v8/src/builtins/builtins-dataview.cc
+                    v8/src/builtins/builtins-date-gen.cc
+                    v8/src/builtins/builtins-date.cc
+                    v8/src/builtins/builtins-error.cc
+                    v8/src/builtins/builtins-function.cc
+                    v8/src/builtins/builtins-generator-gen.cc
+                    v8/src/builtins/builtins-global-gen.cc
+                    v8/src/builtins/builtins-global.cc
+                    v8/src/builtins/builtins-handler-gen.cc
+                    v8/src/builtins/builtins-ic-gen.cc
+                    v8/src/builtins/builtins-internal-gen.cc
+                    v8/src/builtins/builtins-internal.cc
+                    v8/src/builtins/builtins-interpreter-gen.cc
+                    v8/src/builtins/builtins-intl-gen.cc
+                    v8/src/builtins/builtins-intl.cc
+                    v8/src/builtins/builtins-iterator-gen.cc
+                    v8/src/builtins/builtins-json.cc
+                    v8/src/builtins/builtins-lazy-gen.cc
+                    v8/src/builtins/builtins-microtask-queue-gen.cc
+                    v8/src/builtins/builtins-number-gen.cc
+                    v8/src/builtins/builtins-number.cc
+                    v8/src/builtins/builtins-object-gen.cc
+                    v8/src/builtins/builtins-object.cc
+                    v8/src/builtins/builtins-promise-gen.cc
+                    v8/src/builtins/builtins-proxy-gen.cc
+                    v8/src/builtins/builtins-reflect.cc
+                    v8/src/builtins/builtins-regexp-gen.cc
+                    v8/src/builtins/builtins-regexp.cc
+                    v8/src/builtins/builtins-sharedarraybuffer-gen.cc
+                    v8/src/builtins/builtins-sharedarraybuffer.cc
+                    v8/src/builtins/builtins-string-gen.cc
+                    v8/src/builtins/builtins-string.cc
+                    v8/src/builtins/builtins-symbol.cc
+                    v8/src/builtins/builtins-trace.cc
+                    v8/src/builtins/builtins-typed-array-gen.cc
+                    v8/src/builtins/builtins-typed-array.cc
+                    v8/src/builtins/builtins-wasm-gen.cc
+                    v8/src/builtins/builtins-weak-refs.cc
+                    v8/src/builtins/builtins.cc
+                    v8/src/builtins/constants-table-builder.cc
+                    v8/src/builtins/generate-bytecodes-builtins-list.cc
+                    v8/src/builtins/growable-fixed-array-gen.cc
+                    v8/src/builtins/ia32/builtins-ia32.cc
+                    v8/src/builtins/mips/builtins-mips.cc
+                    v8/src/builtins/mips64/builtins-mips64.cc
+                    v8/src/builtins/ppc/builtins-ppc.cc
+                    v8/src/builtins/profile-data-reader.cc
+                    v8/src/builtins/riscv64/builtins-riscv64.cc
+                    v8/src/builtins/s390/builtins-s390.cc
+                    v8/src/builtins/setup-builtins-internal.cc
+                    v8/src/builtins/x64/builtins-x64.cc
+                    v8/src/codegen/aligned-slot-allocator.cc
+                    v8/src/codegen/arm/assembler-arm.cc
+                    v8/src/codegen/arm/constants-arm.cc
+                    v8/src/codegen/arm/cpu-arm.cc
+                    v8/src/codegen/arm/macro-assembler-arm.cc
+                    v8/src/codegen/arm64/assembler-arm64.cc
+                    v8/src/codegen/arm64/cpu-arm64.cc
+                    v8/src/codegen/arm64/decoder-arm64.cc
+                    v8/src/codegen/arm64/instructions-arm64-constants.cc
+                    v8/src/codegen/arm64/instructions-arm64.cc
+                    v8/src/codegen/arm64/macro-assembler-arm64.cc
+                    v8/src/codegen/arm64/register-arm64.cc
+                    v8/src/codegen/arm64/utils-arm64.cc
+                    v8/src/codegen/assembler.cc
+                    v8/src/codegen/bailout-reason.cc
+                    v8/src/codegen/code-comments.cc
+                    v8/src/codegen/code-desc.cc
+                    v8/src/codegen/code-factory.cc
+                    v8/src/codegen/code-reference.cc
+                    v8/src/codegen/code-stub-assembler.cc
+                    v8/src/codegen/compilation-cache.cc
+                    v8/src/codegen/compiler.cc
+                    v8/src/codegen/constant-pool.cc
+                    v8/src/codegen/external-reference-encoder.cc
+                    v8/src/codegen/external-reference-table.cc
+                    v8/src/codegen/external-reference.cc
+                    v8/src/codegen/flush-instruction-cache.cc
+                    v8/src/codegen/handler-table.cc
+                    v8/src/codegen/ia32/assembler-ia32.cc
+                    v8/src/codegen/ia32/cpu-ia32.cc
+                    v8/src/codegen/ia32/macro-assembler-ia32.cc
+                    v8/src/codegen/interface-descriptors.cc
+                    v8/src/codegen/machine-type.cc
+                    v8/src/codegen/mips/assembler-mips.cc
+                    v8/src/codegen/mips/constants-mips.cc
+                    v8/src/codegen/mips/cpu-mips.cc
+                    v8/src/codegen/mips/macro-assembler-mips.cc
+                    v8/src/codegen/mips64/assembler-mips64.cc
+                    v8/src/codegen/mips64/constants-mips64.cc
+                    v8/src/codegen/mips64/cpu-mips64.cc
+                    v8/src/codegen/mips64/macro-assembler-mips64.cc
+                    v8/src/codegen/optimized-compilation-info.cc
+                    v8/src/codegen/pending-optimization-table.cc
+                    v8/src/codegen/ppc/assembler-ppc.cc
+                    v8/src/codegen/ppc/constants-ppc.cc
+                    v8/src/codegen/ppc/cpu-ppc.cc
+                    v8/src/codegen/ppc/macro-assembler-ppc.cc
+                    v8/src/codegen/register-configuration.cc
+                    v8/src/codegen/reloc-info.cc
+                    v8/src/codegen/riscv64/assembler-riscv64.cc
+                    v8/src/codegen/riscv64/constants-riscv64.cc
+                    v8/src/codegen/riscv64/cpu-riscv64.cc
+                    v8/src/codegen/riscv64/macro-assembler-riscv64.cc
+                    v8/src/codegen/s390/assembler-s390.cc
+                    v8/src/codegen/s390/constants-s390.cc
+                    v8/src/codegen/s390/cpu-s390.cc
+                    v8/src/codegen/s390/macro-assembler-s390.cc
+                    v8/src/codegen/safepoint-table.cc
+                    v8/src/codegen/shared-ia32-x64/macro-assembler-shared-ia32-x64.cc
+                    v8/src/codegen/source-position-table.cc
+                    v8/src/codegen/source-position.cc
+                    v8/src/codegen/string-constants.cc
+                    v8/src/codegen/tick-counter.cc
+                    v8/src/codegen/tnode.cc
+                    v8/src/codegen/turbo-assembler.cc
+                    v8/src/codegen/unoptimized-compilation-info.cc
+                    v8/src/codegen/x64/assembler-x64.cc
+                    v8/src/codegen/x64/cpu-x64.cc
+                    v8/src/codegen/x64/macro-assembler-x64.cc
+                    v8/src/common/assert-scope.cc
+                    v8/src/compiler-dispatcher/lazy-compile-dispatcher.cc
+                    v8/src/compiler-dispatcher/optimizing-compile-dispatcher.cc
                     v8/src/compiler/access-builder.cc
                     v8/src/compiler/access-info.cc
+                    v8/src/compiler/add-type-assertions-reducer.cc
                     v8/src/compiler/all-nodes.cc
-                    v8/src/compiler/ast-graph-builder.cc
-                    v8/src/compiler/ast-loop-assignment-analyzer.cc
+                    v8/src/compiler/backend/arm/code-generator-arm.cc
+                    v8/src/compiler/backend/arm/instruction-scheduler-arm.cc
+                    v8/src/compiler/backend/arm/instruction-selector-arm.cc
+                    v8/src/compiler/backend/arm/unwinding-info-writer-arm.cc
+                    v8/src/compiler/backend/arm64/code-generator-arm64.cc
+                    v8/src/compiler/backend/arm64/instruction-scheduler-arm64.cc
+                    v8/src/compiler/backend/arm64/instruction-selector-arm64.cc
+                    v8/src/compiler/backend/arm64/unwinding-info-writer-arm64.cc
+                    v8/src/compiler/backend/code-generator.cc
+                    v8/src/compiler/backend/frame-elider.cc
+                    v8/src/compiler/backend/gap-resolver.cc
+                    v8/src/compiler/backend/ia32/code-generator-ia32.cc
+                    v8/src/compiler/backend/ia32/instruction-scheduler-ia32.cc
+                    v8/src/compiler/backend/ia32/instruction-selector-ia32.cc
+                    v8/src/compiler/backend/instruction-scheduler.cc
+                    v8/src/compiler/backend/instruction-selector.cc
+                    v8/src/compiler/backend/instruction.cc
+                    v8/src/compiler/backend/jump-threading.cc
+                    v8/src/compiler/backend/mid-tier-register-allocator.cc
+                    v8/src/compiler/backend/mips/code-generator-mips.cc
+                    v8/src/compiler/backend/mips/instruction-scheduler-mips.cc
+                    v8/src/compiler/backend/mips/instruction-selector-mips.cc
+                    v8/src/compiler/backend/mips64/code-generator-mips64.cc
+                    v8/src/compiler/backend/mips64/instruction-scheduler-mips64.cc
+                    v8/src/compiler/backend/mips64/instruction-selector-mips64.cc
+                    v8/src/compiler/backend/move-optimizer.cc
+                    v8/src/compiler/backend/ppc/code-generator-ppc.cc
+                    v8/src/compiler/backend/ppc/instruction-scheduler-ppc.cc
+                    v8/src/compiler/backend/ppc/instruction-selector-ppc.cc
+                    v8/src/compiler/backend/ppc/unwinding-info-writer-ppc.cc
+                    v8/src/compiler/backend/register-allocator-verifier.cc
+                    v8/src/compiler/backend/register-allocator.cc
+                    v8/src/compiler/backend/riscv64/code-generator-riscv64.cc
+                    v8/src/compiler/backend/riscv64/instruction-scheduler-riscv64.cc
+                    v8/src/compiler/backend/riscv64/instruction-selector-riscv64.cc
+                    v8/src/compiler/backend/s390/code-generator-s390.cc
+                    v8/src/compiler/backend/s390/instruction-scheduler-s390.cc
+                    v8/src/compiler/backend/s390/instruction-selector-s390.cc
+                    v8/src/compiler/backend/s390/unwinding-info-writer-s390.cc
+                    v8/src/compiler/backend/spill-placer.cc
+                    v8/src/compiler/backend/x64/code-generator-x64.cc
+                    v8/src/compiler/backend/x64/instruction-scheduler-x64.cc
+                    v8/src/compiler/backend/x64/instruction-selector-x64.cc
+                    v8/src/compiler/backend/x64/unwinding-info-writer-x64.cc
                     v8/src/compiler/basic-block-instrumentor.cc
                     v8/src/compiler/branch-elimination.cc
-                    v8/src/compiler/bytecode-branch-analysis.cc
+                    v8/src/compiler/bytecode-analysis.cc
                     v8/src/compiler/bytecode-graph-builder.cc
+                    v8/src/compiler/bytecode-liveness-map.cc
                     v8/src/compiler/c-linkage.cc
                     v8/src/compiler/checkpoint-elimination.cc
-                    v8/src/compiler/code-generator.cc
                     v8/src/compiler/code-assembler.cc
                     v8/src/compiler/common-node-cache.cc
                     v8/src/compiler/common-operator-reducer.cc
                     v8/src/compiler/common-operator.cc
-                    v8/src/compiler/control-builders.cc
+                    v8/src/compiler/compilation-dependencies.cc
+                    v8/src/compiler/compiler-source-position-table.cc
+                    v8/src/compiler/constant-folding-reducer.cc
                     v8/src/compiler/control-equivalence.cc
                     v8/src/compiler/control-flow-optimizer.cc
+                    v8/src/compiler/csa-load-elimination.cc
                     v8/src/compiler/dead-code-elimination.cc
+                    v8/src/compiler/decompression-optimizer.cc
                     v8/src/compiler/effect-control-linearizer.cc
-                    v8/src/compiler/escape-analysis.cc
                     v8/src/compiler/escape-analysis-reducer.cc
-                    v8/src/compiler/frame.cc
-                    v8/src/compiler/frame-elider.cc
+                    v8/src/compiler/escape-analysis.cc
+                    v8/src/compiler/fast-api-calls.cc
+                    v8/src/compiler/feedback-source.cc
                     v8/src/compiler/frame-states.cc
-                    v8/src/compiler/gap-resolver.cc
+                    v8/src/compiler/frame.cc
+                    v8/src/compiler/graph-assembler.cc
                     v8/src/compiler/graph-reducer.cc
-                    v8/src/compiler/graph-replay.cc
                     v8/src/compiler/graph-trimmer.cc
                     v8/src/compiler/graph-visualizer.cc
                     v8/src/compiler/graph.cc
-                    v8/src/compiler/instruction-selector.cc
-                    v8/src/compiler/instruction-scheduler.cc
-                    v8/src/compiler/instruction.cc
+                    v8/src/compiler/heap-refs.cc
                     v8/src/compiler/int64-lowering.cc
-                    v8/src/compiler/js-builtin-reducer.cc
                     v8/src/compiler/js-call-reducer.cc
                     v8/src/compiler/js-context-specialization.cc
                     v8/src/compiler/js-create-lowering.cc
-                    v8/src/compiler/js-frame-specialization.cc
                     v8/src/compiler/js-generic-lowering.cc
-                    v8/src/compiler/js-global-object-specialization.cc
                     v8/src/compiler/js-graph.cc
-                    v8/src/compiler/js-inlining.cc
+                    v8/src/compiler/js-heap-broker.cc
+                    v8/src/compiler/js-heap-copy-reducer.cc
                     v8/src/compiler/js-inlining-heuristic.cc
+                    v8/src/compiler/js-inlining.cc
                     v8/src/compiler/js-intrinsic-lowering.cc
                     v8/src/compiler/js-native-context-specialization.cc
                     v8/src/compiler/js-operator.cc
+                    v8/src/compiler/js-type-hint-lowering.cc
                     v8/src/compiler/js-typed-lowering.cc
-                    v8/src/compiler/jump-threading.cc
                     v8/src/compiler/linkage.cc
-                    v8/src/compiler/liveness-analyzer.cc
-                    v8/src/compiler/live-range-separator.cc
                     v8/src/compiler/load-elimination.cc
                     v8/src/compiler/loop-analysis.cc
                     v8/src/compiler/loop-peeling.cc
+                    v8/src/compiler/loop-unrolling.cc
+                    v8/src/compiler/loop-variable-optimizer.cc
+                    v8/src/compiler/machine-graph-verifier.cc
+                    v8/src/compiler/machine-graph.cc
                     v8/src/compiler/machine-operator-reducer.cc
                     v8/src/compiler/machine-operator.cc
+                    v8/src/compiler/map-inference.cc
+                    v8/src/compiler/memory-lowering.cc
                     v8/src/compiler/memory-optimizer.cc
-                    v8/src/compiler/move-optimizer.cc
-                    v8/src/compiler/node-cache.cc
                     v8/src/compiler/node-marker.cc
                     v8/src/compiler/node-matchers.cc
+                    v8/src/compiler/node-observer.cc
+                    v8/src/compiler/node-origin-table.cc
                     v8/src/compiler/node-properties.cc
                     v8/src/compiler/node.cc
                     v8/src/compiler/opcodes.cc
@@ -117,12 +342,12 @@ add_library(v8 STATIC
                     v8/src/compiler/operator-properties.cc
                     v8/src/compiler/operator.cc
                     v8/src/compiler/osr.cc
-                    v8/src/compiler/pipeline.cc
                     v8/src/compiler/pipeline-statistics.cc
+                    v8/src/compiler/pipeline.cc
+                    v8/src/compiler/property-access-builder.cc
                     v8/src/compiler/raw-machine-assembler.cc
                     v8/src/compiler/redundancy-elimination.cc
-                    v8/src/compiler/register-allocator.cc
-                    v8/src/compiler/register-allocator-verifier.cc
+                    v8/src/compiler/refs-map.cc
                     v8/src/compiler/representation-change.cc
                     v8/src/compiler/schedule.cc
                     v8/src/compiler/scheduler.cc
@@ -130,177 +355,476 @@ add_library(v8 STATIC
                     v8/src/compiler/simplified-lowering.cc
                     v8/src/compiler/simplified-operator-reducer.cc
                     v8/src/compiler/simplified-operator.cc
-                    v8/src/compiler/source-position.cc
                     v8/src/compiler/state-values-utils.cc
                     v8/src/compiler/store-store-elimination.cc
-                    v8/src/compiler/tail-call-optimization.cc
-                    v8/src/compiler/type-hint-analyzer.cc
-                    v8/src/compiler/type-hints.cc
+                    v8/src/compiler/type-cache.cc
+                    v8/src/compiler/type-narrowing-reducer.cc
+                    v8/src/compiler/typed-optimization.cc
                     v8/src/compiler/typer.cc
+                    v8/src/compiler/types.cc
                     v8/src/compiler/value-numbering-reducer.cc
                     v8/src/compiler/verifier.cc
                     v8/src/compiler/wasm-compiler.cc
-                    v8/src/compiler/wasm-linkage.cc
-                    v8/src/compiler/zone-pool.cc
-                    v8/src/compiler.cc
-                    v8/src/context-measure.cc
-                    v8/src/contexts.cc
-                    v8/src/conversions.cc
-                    v8/src/counters.cc
-                    v8/src/crankshaft/compilation-phase.cc
-                    v8/src/crankshaft/hydrogen-bce.cc
-                    v8/src/crankshaft/hydrogen-canonicalize.cc
-                    v8/src/crankshaft/hydrogen-check-elimination.cc
-                    v8/src/crankshaft/hydrogen-dce.cc
-                    v8/src/crankshaft/hydrogen-dehoist.cc
-                    v8/src/crankshaft/hydrogen-environment-liveness.cc
-                    v8/src/crankshaft/hydrogen-escape-analysis.cc
-                    v8/src/crankshaft/hydrogen-gvn.cc
-                    v8/src/crankshaft/hydrogen-infer-representation.cc
-                    v8/src/crankshaft/hydrogen-infer-types.cc
-                    v8/src/crankshaft/hydrogen-instructions.cc
-                    v8/src/crankshaft/hydrogen-load-elimination.cc
-                    v8/src/crankshaft/hydrogen-mark-deoptimize.cc
-                    v8/src/crankshaft/hydrogen-mark-unreachable.cc
-                    v8/src/crankshaft/hydrogen-osr.cc
-                    v8/src/crankshaft/hydrogen-range-analysis.cc
-                    v8/src/crankshaft/hydrogen-redundant-phi.cc
-                    v8/src/crankshaft/hydrogen-removable-simulates.cc
-                    v8/src/crankshaft/hydrogen-representation-changes.cc
-                    v8/src/crankshaft/hydrogen-sce.cc
-                    v8/src/crankshaft/hydrogen-store-elimination.cc
-                    v8/src/crankshaft/hydrogen-types.cc
-                    v8/src/crankshaft/hydrogen-uint32-analysis.cc
-                    v8/src/crankshaft/hydrogen.cc
-                    v8/src/crankshaft/lithium-allocator.cc
-                    v8/src/crankshaft/lithium-codegen.cc
-                    v8/src/crankshaft/lithium.cc
-                    v8/src/crankshaft/typing.cc
-                    v8/src/date.cc
-                    v8/src/dateparser.cc
+                    v8/src/compiler/zone-stats.cc
+                    v8/src/d8/async-hooks-wrapper.cc
+                    v8/src/d8/cov.cc
+                    v8/src/d8/d8-console.cc
+                    v8/src/d8/d8-js.cc
+                    v8/src/d8/d8-platforms.cc
+                    v8/src/d8/d8-posix.cc
+                    v8/src/d8/d8-test.cc
+                    v8/src/d8/d8-windows.cc
+                    v8/src/d8/d8.cc
+                    v8/src/date/date.cc
+                    v8/src/date/dateparser.cc
+                    v8/src/debug/debug-coverage.cc
                     v8/src/debug/debug-evaluate.cc
                     v8/src/debug/debug-frames.cc
+                    v8/src/debug/debug-interface.cc
+                    v8/src/debug/debug-property-iterator.cc
+                    v8/src/debug/debug-scope-iterator.cc
                     v8/src/debug/debug-scopes.cc
+                    v8/src/debug/debug-stack-trace-iterator.cc
+                    v8/src/debug/debug-type-profile.cc
+                    v8/src/debug/debug-wasm-objects.cc
                     v8/src/debug/debug.cc
                     v8/src/debug/liveedit.cc
-                    v8/src/deoptimizer.cc
-                    v8/src/disassembler.cc
-                    v8/src/diy-fp.cc
-                    v8/src/dtoa.cc
-                    v8/src/eh-frame.cc
-                    v8/src/elements-kind.cc
-                    v8/src/elements.cc
-                    v8/src/execution.cc
+                    v8/src/debug/wasm/gdb-server/gdb-remote-util.cc
+                    v8/src/debug/wasm/gdb-server/gdb-server-thread.cc
+                    v8/src/debug/wasm/gdb-server/gdb-server.cc
+                    v8/src/debug/wasm/gdb-server/packet.cc
+                    v8/src/debug/wasm/gdb-server/session.cc
+                    v8/src/debug/wasm/gdb-server/target.cc
+                    v8/src/debug/wasm/gdb-server/transport.cc
+                    v8/src/debug/wasm/gdb-server/wasm-module-debug.cc
+                    v8/src/deoptimizer/arm/deoptimizer-arm.cc
+                    v8/src/deoptimizer/arm64/deoptimizer-arm64.cc
+                    v8/src/deoptimizer/deoptimize-reason.cc
+                    v8/src/deoptimizer/deoptimized-frame-info.cc
+                    v8/src/deoptimizer/deoptimizer-cfi-builtins.cc
+                    v8/src/deoptimizer/deoptimizer-cfi-empty.cc
+                    v8/src/deoptimizer/deoptimizer.cc
+                    v8/src/deoptimizer/ia32/deoptimizer-ia32.cc
+                    v8/src/deoptimizer/materialized-object-store.cc
+                    v8/src/deoptimizer/mips/deoptimizer-mips.cc
+                    v8/src/deoptimizer/mips64/deoptimizer-mips64.cc
+                    v8/src/deoptimizer/ppc/deoptimizer-ppc.cc
+                    v8/src/deoptimizer/riscv64/deoptimizer-riscv64.cc
+                    v8/src/deoptimizer/s390/deoptimizer-s390.cc
+                    v8/src/deoptimizer/translated-state.cc
+                    v8/src/deoptimizer/translation-array.cc
+                    v8/src/deoptimizer/x64/deoptimizer-x64.cc
+                    v8/src/diagnostics/arm/disasm-arm.cc
+                    v8/src/diagnostics/arm/eh-frame-arm.cc
+                    v8/src/diagnostics/arm/unwinder-arm.cc
+                    v8/src/diagnostics/arm64/disasm-arm64.cc
+                    v8/src/diagnostics/arm64/eh-frame-arm64.cc
+                    v8/src/diagnostics/arm64/unwinder-arm64.cc
+                    v8/src/diagnostics/basic-block-profiler.cc
+                    v8/src/diagnostics/compilation-statistics.cc
+                    v8/src/diagnostics/disassembler.cc
+                    v8/src/diagnostics/eh-frame.cc
+                    v8/src/diagnostics/gdb-jit.cc
+                    v8/src/diagnostics/ia32/disasm-ia32.cc
+                    v8/src/diagnostics/ia32/unwinder-ia32.cc
+                    v8/src/diagnostics/mips/disasm-mips.cc
+                    v8/src/diagnostics/mips/unwinder-mips.cc
+                    v8/src/diagnostics/mips64/disasm-mips64.cc
+                    v8/src/diagnostics/mips64/unwinder-mips64.cc
+                    v8/src/diagnostics/objects-debug.cc
+                    v8/src/diagnostics/objects-printer.cc
+                    v8/src/diagnostics/perf-jit.cc
+                    v8/src/diagnostics/ppc/disasm-ppc.cc
+                    v8/src/diagnostics/ppc/eh-frame-ppc.cc
+                    v8/src/diagnostics/ppc/unwinder-ppc.cc
+                    v8/src/diagnostics/riscv64/disasm-riscv64.cc
+                    v8/src/diagnostics/riscv64/unwinder-riscv64.cc
+                    v8/src/diagnostics/s390/disasm-s390.cc
+                    v8/src/diagnostics/s390/eh-frame-s390.cc
+                    v8/src/diagnostics/s390/unwinder-s390.cc
+                    v8/src/diagnostics/system-jit-win.cc
+                    v8/src/diagnostics/unwinder.cc
+                    v8/src/diagnostics/unwinding-info-win64.cc
+                    v8/src/diagnostics/x64/disasm-x64.cc
+                    v8/src/diagnostics/x64/eh-frame-x64.cc
+                    v8/src/diagnostics/x64/unwinder-x64.cc
+                    v8/src/execution/arguments.cc
+                    v8/src/execution/arm/frame-constants-arm.cc
+                    v8/src/execution/arm/simulator-arm.cc
+                    v8/src/execution/arm64/frame-constants-arm64.cc
+                    v8/src/execution/arm64/pointer-auth-arm64.cc
+                    v8/src/execution/arm64/simulator-arm64.cc
+                    v8/src/execution/arm64/simulator-logic-arm64.cc
+                    v8/src/execution/execution.cc
+                    v8/src/execution/external-pointer-table.cc
+                    v8/src/execution/frames.cc
+                    v8/src/execution/futex-emulation.cc
+                    v8/src/execution/ia32/frame-constants-ia32.cc
+                    v8/src/execution/interrupts-scope.cc
+                    v8/src/execution/isolate.cc
+                    v8/src/execution/local-isolate.cc
+                    v8/src/execution/messages.cc
+                    v8/src/execution/microtask-queue.cc
+                    v8/src/execution/mips/frame-constants-mips.cc
+                    v8/src/execution/mips/simulator-mips.cc
+                    v8/src/execution/mips64/frame-constants-mips64.cc
+                    v8/src/execution/mips64/simulator-mips64.cc
+                    v8/src/execution/ppc/frame-constants-ppc.cc
+                    v8/src/execution/ppc/simulator-ppc.cc
+                    v8/src/execution/protectors.cc
+                    v8/src/execution/riscv64/frame-constants-riscv64.cc
+                    v8/src/execution/riscv64/simulator-riscv64.cc
+                    v8/src/execution/runtime-profiler.cc
+                    v8/src/execution/s390/frame-constants-s390.cc
+                    v8/src/execution/s390/simulator-s390.cc
+                    v8/src/execution/simulator-base.cc
+                    v8/src/execution/stack-guard.cc
+                    v8/src/execution/thread-id.cc
+                    v8/src/execution/thread-local-top.cc
+                    v8/src/execution/v8threads.cc
+                    v8/src/execution/x64/frame-constants-x64.cc
+                    v8/src/extensions/cputracemark-extension.cc
                     v8/src/extensions/externalize-string-extension.cc
-                    v8/src/extensions/free-buffer-extension.cc
                     v8/src/extensions/gc-extension.cc
                     v8/src/extensions/ignition-statistics-extension.cc
                     v8/src/extensions/statistics-extension.cc
                     v8/src/extensions/trigger-failure-extension.cc
-                    v8/src/external-reference-table.cc
-                    v8/src/factory.cc
-                    v8/src/fast-accessor-assembler.cc
-                    v8/src/fast-dtoa.cc
-                    v8/src/field-type.cc
-                    v8/src/fixed-dtoa.cc
-                    v8/src/flags.cc
-                    v8/src/frames.cc
-                    v8/src/full-codegen/full-codegen.cc
-                    v8/src/futex-emulation.cc
-                    v8/src/gdb-jit.cc
-                    v8/src/global-handles.cc
-                    v8/src/handles.cc
-                    v8/src/heap/array-buffer-tracker.cc
+                    v8/src/extensions/vtunedomain-support-extension.cc
+                    v8/src/flags/flags.cc
+                    v8/src/handles/global-handles.cc
+                    v8/src/handles/handles.cc
+                    v8/src/handles/local-handles.cc
+                    v8/src/handles/persistent-handles.cc
+                    v8/src/heap/allocation-observer.cc
+                    v8/src/heap/array-buffer-sweeper.cc
+                    v8/src/heap/base-space.cc
+                    v8/src/heap/base/asm/arm/push_registers_asm.cc
+                    v8/src/heap/base/asm/arm64/push_registers_asm.cc
+                    v8/src/heap/base/asm/ia32/push_registers_asm.cc
+                    v8/src/heap/base/asm/mips/push_registers_asm.cc
+                    v8/src/heap/base/asm/mips64/push_registers_asm.cc
+                    v8/src/heap/base/asm/ppc/push_registers_asm.cc
+                    v8/src/heap/base/asm/riscv64/push_registers_asm.cc
+                    v8/src/heap/base/asm/s390/push_registers_asm.cc
+                    v8/src/heap/base/asm/x64/push_registers_asm.cc
+                    v8/src/heap/base/stack.cc
+                    v8/src/heap/base/worklist.cc
+                    v8/src/heap/basic-memory-chunk.cc
+                    v8/src/heap/code-object-registry.cc
+                    v8/src/heap/code-range.cc
                     v8/src/heap/code-stats.cc
-                    v8/src/heap/memory-reducer.cc
+                    v8/src/heap/collection-barrier.cc
+                    v8/src/heap/combined-heap.cc
+                    v8/src/heap/concurrent-allocator.cc
+                    v8/src/heap/concurrent-marking.cc
+                    v8/src/heap/conservative-stack-visitor.cc
+                    v8/src/heap/cppgc-js/cpp-heap.cc
+                    v8/src/heap/cppgc-js/cpp-snapshot.cc
+                    v8/src/heap/cppgc-js/unified-heap-marking-verifier.cc
+                    v8/src/heap/cppgc-js/unified-heap-marking-visitor.cc
+                    v8/src/heap/cppgc/allocation.cc
+                    v8/src/heap/cppgc/caged-heap-local-data.cc
+                    v8/src/heap/cppgc/caged-heap.cc
+                    v8/src/heap/cppgc/compaction-worklists.cc
+                    v8/src/heap/cppgc/compactor.cc
+                    v8/src/heap/cppgc/concurrent-marker.cc
+                    v8/src/heap/cppgc/default-platform.cc
+                    v8/src/heap/cppgc/explicit-management.cc
+                    v8/src/heap/cppgc/free-list.cc
+                    v8/src/heap/cppgc/gc-info-table.cc
+                    v8/src/heap/cppgc/gc-info.cc
+                    v8/src/heap/cppgc/gc-invoker.cc
+                    v8/src/heap/cppgc/heap-base.cc
+                    v8/src/heap/cppgc/heap-consistency.cc
+                    v8/src/heap/cppgc/heap-growing.cc
+                    v8/src/heap/cppgc/heap-object-header.cc
+                    v8/src/heap/cppgc/heap-page.cc
+                    v8/src/heap/cppgc/heap-space.cc
+                    v8/src/heap/cppgc/heap-state.cc
+                    v8/src/heap/cppgc/heap-statistics-collector.cc
+                    v8/src/heap/cppgc/heap.cc
+                    v8/src/heap/cppgc/incremental-marking-schedule.cc
+                    v8/src/heap/cppgc/liveness-broker.cc
+                    v8/src/heap/cppgc/logging.cc
+                    v8/src/heap/cppgc/marker.cc
+                    v8/src/heap/cppgc/marking-state.cc
+                    v8/src/heap/cppgc/marking-verifier.cc
+                    v8/src/heap/cppgc/marking-visitor.cc
+                    v8/src/heap/cppgc/marking-worklists.cc
+                    v8/src/heap/cppgc/memory.cc
+                    v8/src/heap/cppgc/name-trait.cc
+                    v8/src/heap/cppgc/object-allocator.cc
+                    v8/src/heap/cppgc/object-size-trait.cc
+                    v8/src/heap/cppgc/page-memory.cc
+                    v8/src/heap/cppgc/persistent-node.cc
+                    v8/src/heap/cppgc/platform.cc
+                    v8/src/heap/cppgc/pointer-policies.cc
+                    v8/src/heap/cppgc/prefinalizer-handler.cc
+                    v8/src/heap/cppgc/process-heap-statistics.cc
+                    v8/src/heap/cppgc/process-heap.cc
+                    v8/src/heap/cppgc/raw-heap.cc
+                    v8/src/heap/cppgc/source-location.cc
+                    v8/src/heap/cppgc/stats-collector.cc
+                    v8/src/heap/cppgc/sweeper.cc
+                    v8/src/heap/cppgc/testing.cc
+                    v8/src/heap/cppgc/trace-trait.cc
+                    v8/src/heap/cppgc/virtual-memory.cc
+                    v8/src/heap/cppgc/visitor.cc
+                    v8/src/heap/cppgc/write-barrier.cc
+                    v8/src/heap/embedder-tracing.cc
+                    v8/src/heap/factory-base.cc
+                    v8/src/heap/factory.cc
+                    v8/src/heap/finalization-registry-cleanup-task.cc
+                    v8/src/heap/free-list.cc
                     v8/src/heap/gc-idle-time-handler.cc
                     v8/src/heap/gc-tracer.cc
+                    v8/src/heap/heap-controller.cc
+                    v8/src/heap/heap-write-barrier.cc
                     v8/src/heap/heap.cc
                     v8/src/heap/incremental-marking-job.cc
                     v8/src/heap/incremental-marking.cc
+                    v8/src/heap/index-generator.cc
+                    v8/src/heap/invalidated-slots.cc
+                    v8/src/heap/large-spaces.cc
+                    v8/src/heap/local-factory.cc
+                    v8/src/heap/local-heap.cc
                     v8/src/heap/mark-compact.cc
+                    v8/src/heap/marking-barrier.cc
+                    v8/src/heap/marking-worklist.cc
+                    v8/src/heap/marking.cc
+                    v8/src/heap/memory-allocator.cc
+                    v8/src/heap/memory-chunk-layout.cc
+                    v8/src/heap/memory-chunk.cc
+                    v8/src/heap/memory-measurement.cc
+                    v8/src/heap/memory-reducer.cc
+                    v8/src/heap/new-spaces.cc
                     v8/src/heap/object-stats.cc
                     v8/src/heap/objects-visiting.cc
-                    v8/src/heap/remembered-set.cc
+                    v8/src/heap/paged-spaces.cc
+                    v8/src/heap/read-only-heap.cc
+                    v8/src/heap/read-only-spaces.cc
+                    v8/src/heap/safepoint.cc
                     v8/src/heap/scavenge-job.cc
                     v8/src/heap/scavenger.cc
+                    v8/src/heap/setup-heap-internal.cc
+                    v8/src/heap/slot-set.cc
                     v8/src/heap/spaces.cc
-                    v8/src/heap/store-buffer.cc
-                    v8/src/icu_util.cc
-                    v8/src/ic/access-compiler.cc
+                    v8/src/heap/stress-marking-observer.cc
+                    v8/src/heap/stress-scavenge-observer.cc
+                    v8/src/heap/sweeper.cc
+                    v8/src/heap/third-party/heap-api-stub.cc
+                    v8/src/heap/weak-object-worklists.cc
+                    v8/src/ic/accessor-assembler.cc
+                    v8/src/ic/binary-op-assembler.cc
                     v8/src/ic/call-optimization.cc
-                    v8/src/ic/handler-compiler.cc
-                    v8/src/ic/ic-state.cc
+                    v8/src/ic/handler-configuration.cc
+                    v8/src/ic/ic-stats.cc
                     v8/src/ic/ic.cc
-                    v8/src/ic/ic-compiler.cc
-                    v8/src/identity-map.cc
-                    v8/src/interface-descriptors.cc
-                    v8/src/interpreter/bytecodes.cc
+                    v8/src/ic/keyed-store-generic.cc
+                    v8/src/ic/stub-cache.cc
+                    v8/src/ic/unary-op-assembler.cc
+                    v8/src/init/bootstrapper.cc
+                    v8/src/init/icu_util.cc
+                    v8/src/init/isolate-allocator.cc
+                    v8/src/init/setup-isolate-deserialize.cc
+                    v8/src/init/setup-isolate-full.cc
+                    v8/src/init/startup-data-util.cc
+                    v8/src/init/v8.cc
+                    v8/src/inspector/custom-preview.cc
+                    v8/src/inspector/injected-script.cc
+                    v8/src/inspector/inspected-context.cc
+                    v8/src/inspector/remote-object-id.cc
+                    v8/src/inspector/search-util.cc
+                    v8/src/inspector/string-16.cc
+                    v8/src/inspector/string-util.cc
+                    v8/src/inspector/test-interface.cc
+                    v8/src/inspector/v8-console-agent-impl.cc
+                    v8/src/inspector/v8-console-message.cc
+                    v8/src/inspector/v8-console.cc
+                    v8/src/inspector/v8-debugger-agent-impl.cc
+                    v8/src/inspector/v8-debugger-id.cc
+                    v8/src/inspector/v8-debugger-script.cc
+                    v8/src/inspector/v8-debugger.cc
+                    v8/src/inspector/v8-heap-profiler-agent-impl.cc
+                    v8/src/inspector/v8-inspector-impl.cc
+                    v8/src/inspector/v8-inspector-session-impl.cc
+                    v8/src/inspector/v8-profiler-agent-impl.cc
+                    v8/src/inspector/v8-regex.cc
+                    v8/src/inspector/v8-runtime-agent-impl.cc
+                    v8/src/inspector/v8-schema-agent-impl.cc
+                    v8/src/inspector/v8-stack-trace-impl.cc
+                    v8/src/inspector/v8-string-conversions.cc
+                    v8/src/inspector/v8-value-utils.cc
+                    v8/src/inspector/value-mirror.cc
                     v8/src/interpreter/bytecode-array-builder.cc
                     v8/src/interpreter/bytecode-array-iterator.cc
+                    v8/src/interpreter/bytecode-array-random-iterator.cc
                     v8/src/interpreter/bytecode-array-writer.cc
-                    v8/src/interpreter/bytecode-dead-code-optimizer.cc
+                    v8/src/interpreter/bytecode-decoder.cc
+                    v8/src/interpreter/bytecode-flags.cc
                     v8/src/interpreter/bytecode-generator.cc
-                    v8/src/interpreter/bytecode-peephole-optimizer.cc
-                    v8/src/interpreter/bytecode-pipeline.cc
-                    v8/src/interpreter/bytecode-register-allocator.cc
+                    v8/src/interpreter/bytecode-label.cc
+                    v8/src/interpreter/bytecode-node.cc
+                    v8/src/interpreter/bytecode-operands.cc
                     v8/src/interpreter/bytecode-register-optimizer.cc
+                    v8/src/interpreter/bytecode-register.cc
+                    v8/src/interpreter/bytecode-source-info.cc
+                    v8/src/interpreter/bytecodes.cc
                     v8/src/interpreter/constant-array-builder.cc
                     v8/src/interpreter/control-flow-builders.cc
                     v8/src/interpreter/handler-table-builder.cc
-                    v8/src/interpreter/interpreter.cc
                     v8/src/interpreter/interpreter-assembler.cc
+                    v8/src/interpreter/interpreter-generator.cc
+                    v8/src/interpreter/interpreter-intrinsics-generator.cc
                     v8/src/interpreter/interpreter-intrinsics.cc
-                    v8/src/isolate.cc
-                    v8/src/json-parser.cc
-                    v8/src/json-stringifier.cc
-                    v8/src/keys.cc
-                    v8/src/layout-descriptor.cc
-                    v8/src/log-utils.cc
-                    v8/src/log.cc
-                    v8/src/lookup.cc
-                    v8/src/machine-type.cc
-                    v8/src/messages.cc
-                    v8/src/objects-debug.cc
-                    v8/src/objects-printer.cc
-                    v8/src/objects.cc
-                    v8/src/optimizing-compile-dispatcher.cc
-                    v8/src/ostreams.cc
+                    v8/src/interpreter/interpreter.cc
+                    v8/src/json/json-parser.cc
+                    v8/src/json/json-stringifier.cc
+                    v8/src/libplatform/default-foreground-task-runner.cc
+                    v8/src/libplatform/default-job.cc
+                    v8/src/libplatform/default-platform.cc
+                    v8/src/libplatform/default-worker-threads-task-runner.cc
+                    v8/src/libplatform/delayed-task-queue.cc
+                    v8/src/libplatform/task-queue.cc
+                    v8/src/libplatform/tracing/recorder-mac.cc
+                    v8/src/libplatform/tracing/recorder-win.cc
+                    v8/src/libplatform/tracing/trace-buffer.cc
+                    v8/src/libplatform/tracing/trace-config.cc
+                    v8/src/libplatform/tracing/trace-event-listener.cc
+                    v8/src/libplatform/tracing/trace-object.cc
+                    v8/src/libplatform/tracing/trace-writer.cc
+                    v8/src/libplatform/tracing/tracing-controller.cc
+                    v8/src/libplatform/worker-thread.cc
+                    v8/src/libsampler/sampler.cc
+                    v8/src/logging/counters.cc
+                    v8/src/logging/local-logger.cc
+                    v8/src/logging/log-utils.cc
+                    v8/src/logging/log.cc
+                    v8/src/logging/metrics.cc
+                    v8/src/logging/runtime-call-stats.cc
+                    v8/src/logging/tracing-flags.cc
+                    v8/src/numbers/conversions.cc
+                    v8/src/numbers/math-random.cc
+                    v8/src/objects/backing-store.cc
+                    v8/src/objects/bigint.cc
+                    v8/src/objects/code-kind.cc
+                    v8/src/objects/code.cc
+                    v8/src/objects/compilation-cache-table.cc
+                    v8/src/objects/contexts.cc
+                    v8/src/objects/debug-objects.cc
+                    v8/src/objects/elements-kind.cc
+                    v8/src/objects/elements.cc
+                    v8/src/objects/embedder-data-array.cc
+                    v8/src/objects/feedback-vector.cc
+                    v8/src/objects/field-type.cc
+                    v8/src/objects/intl-objects.cc
+                    v8/src/objects/js-array-buffer.cc
+                    v8/src/objects/js-break-iterator.cc
+                    v8/src/objects/js-collator.cc
+                    v8/src/objects/js-date-time-format.cc
+                    v8/src/objects/js-display-names.cc
+                    v8/src/objects/js-function.cc
+                    v8/src/objects/js-list-format.cc
+                    v8/src/objects/js-locale.cc
+                    v8/src/objects/js-number-format.cc
+                    v8/src/objects/js-objects.cc
+                    v8/src/objects/js-plural-rules.cc
+                    v8/src/objects/js-regexp.cc
+                    v8/src/objects/js-relative-time-format.cc
+                    v8/src/objects/js-segment-iterator.cc
+                    v8/src/objects/js-segmenter.cc
+                    v8/src/objects/js-segments.cc
+                    v8/src/objects/keys.cc
+                    v8/src/objects/literal-objects.cc
+                    v8/src/objects/lookup-cache.cc
+                    v8/src/objects/lookup.cc
+                    v8/src/objects/managed.cc
+                    v8/src/objects/map-updater.cc
+                    v8/src/objects/map.cc
+                    v8/src/objects/module.cc
+                    v8/src/objects/object-type.cc
+                    v8/src/objects/objects.cc
+                    v8/src/objects/ordered-hash-table.cc
+                    v8/src/objects/osr-optimized-code-cache.cc
+                    v8/src/objects/property-descriptor.cc
+                    v8/src/objects/property.cc
+                    v8/src/objects/scope-info.cc
+                    v8/src/objects/shared-function-info.cc
+                    v8/src/objects/source-text-module.cc
+                    v8/src/objects/stack-frame-info.cc
+                    v8/src/objects/string-comparator.cc
+                    v8/src/objects/string-table.cc
+                    v8/src/objects/string.cc
+                    v8/src/objects/swiss-name-dictionary.cc
+                    v8/src/objects/synthetic-module.cc
+                    v8/src/objects/tagged-impl.cc
+                    v8/src/objects/template-objects.cc
+                    v8/src/objects/templates.cc
+                    v8/src/objects/transitions.cc
+                    v8/src/objects/type-hints.cc
+                    v8/src/objects/value-serializer.cc
+                    v8/src/objects/visitors.cc
                     v8/src/parsing/func-name-inferrer.cc
-                    v8/src/parsing/parameter-initializer-rewriter.cc
+                    v8/src/parsing/import-assertions.cc
+                    v8/src/parsing/literal-buffer.cc
+                    v8/src/parsing/parse-info.cc
                     v8/src/parsing/parser.cc
-                    v8/src/parsing/pattern-rewriter.cc
+                    v8/src/parsing/parsing.cc
+                    v8/src/parsing/pending-compilation-error-handler.cc
                     v8/src/parsing/preparse-data.cc
                     v8/src/parsing/preparser.cc
                     v8/src/parsing/rewriter.cc
                     v8/src/parsing/scanner-character-streams.cc
                     v8/src/parsing/scanner.cc
                     v8/src/parsing/token.cc
-                    v8/src/pending-compilation-error-handler.cc
-                    v8/src/perf-jit.cc
                     v8/src/profiler/allocation-tracker.cc
                     v8/src/profiler/cpu-profiler.cc
                     v8/src/profiler/heap-profiler.cc
                     v8/src/profiler/heap-snapshot-generator.cc
-                    v8/src/profiler/profiler-listener.cc
                     v8/src/profiler/profile-generator.cc
+                    v8/src/profiler/profiler-listener.cc
+                    v8/src/profiler/profiler-stats.cc
                     v8/src/profiler/sampling-heap-profiler.cc
                     v8/src/profiler/strings-storage.cc
+                    v8/src/profiler/symbolizer.cc
                     v8/src/profiler/tick-sample.cc
-                    v8/src/property-descriptor.cc
-                    v8/src/property.cc
-                    v8/src/regexp/interpreter-irregexp.cc
-                    v8/src/regexp/jsregexp.cc
+                    v8/src/profiler/tracing-cpu-profiler.cc
+                    v8/src/profiler/weak-code-registry.cc
+                    v8/src/protobuf/protobuf-compiler-main.cc
+                    v8/src/regexp/arm/regexp-macro-assembler-arm.cc
+                    v8/src/regexp/arm64/regexp-macro-assembler-arm64.cc
+                    v8/src/regexp/experimental/experimental-bytecode.cc
+                    v8/src/regexp/experimental/experimental-compiler.cc
+                    v8/src/regexp/experimental/experimental-interpreter.cc
+                    v8/src/regexp/experimental/experimental.cc
+                    v8/src/regexp/gen-regexp-special-case.cc
+                    v8/src/regexp/ia32/regexp-macro-assembler-ia32.cc
+                    v8/src/regexp/mips/regexp-macro-assembler-mips.cc
+                    v8/src/regexp/mips64/regexp-macro-assembler-mips64.cc
+                    v8/src/regexp/ppc/regexp-macro-assembler-ppc.cc
+                    v8/src/regexp/property-sequences.cc
                     v8/src/regexp/regexp-ast.cc
-                    v8/src/regexp/regexp-macro-assembler-irregexp.cc
+                    v8/src/regexp/regexp-bytecode-generator.cc
+                    v8/src/regexp/regexp-bytecode-peephole.cc
+                    v8/src/regexp/regexp-bytecodes.cc
+                    v8/src/regexp/regexp-compiler-tonode.cc
+                    v8/src/regexp/regexp-compiler.cc
+                    v8/src/regexp/regexp-dotprinter.cc
+                    v8/src/regexp/regexp-error.cc
+                    v8/src/regexp/regexp-interpreter.cc
                     v8/src/regexp/regexp-macro-assembler-tracer.cc
                     v8/src/regexp/regexp-macro-assembler.cc
                     v8/src/regexp/regexp-parser.cc
                     v8/src/regexp/regexp-stack.cc
-                    v8/src/register-configuration.cc
-                    v8/src/runtime-profiler.cc
+                    v8/src/regexp/regexp-utils.cc
+                    v8/src/regexp/regexp.cc
+                    v8/src/regexp/riscv64/regexp-macro-assembler-riscv64.cc
+                    v8/src/regexp/s390/regexp-macro-assembler-s390.cc
+                    v8/src/regexp/x64/regexp-macro-assembler-x64.cc
+                    v8/src/roots/roots.cc
                     v8/src/runtime/runtime-array.cc
                     v8/src/runtime/runtime-atomics.cc
+                    v8/src/runtime/runtime-bigint.cc
                     v8/src/runtime/runtime-classes.cc
                     v8/src/runtime/runtime-collections.cc
                     v8/src/runtime/runtime-compiler.cc
@@ -310,116 +834,158 @@ add_library(v8 STATIC
                     v8/src/runtime/runtime-function.cc
                     v8/src/runtime/runtime-futex.cc
                     v8/src/runtime/runtime-generator.cc
-                    v8/src/runtime/runtime-i18n.cc
                     v8/src/runtime/runtime-internal.cc
-                    v8/src/runtime/runtime-interpreter.cc
+                    v8/src/runtime/runtime-intl.cc
                     v8/src/runtime/runtime-literals.cc
-                    v8/src/runtime/runtime-liveedit.cc
-                    v8/src/runtime/runtime-maths.cc
+                    v8/src/runtime/runtime-module.cc
                     v8/src/runtime/runtime-numbers.cc
                     v8/src/runtime/runtime-object.cc
                     v8/src/runtime/runtime-operators.cc
+                    v8/src/runtime/runtime-promise.cc
                     v8/src/runtime/runtime-proxy.cc
                     v8/src/runtime/runtime-regexp.cc
                     v8/src/runtime/runtime-scopes.cc
-                    v8/src/runtime/runtime-simd.cc
                     v8/src/runtime/runtime-strings.cc
                     v8/src/runtime/runtime-symbol.cc
+                    v8/src/runtime/runtime-test-wasm.cc
                     v8/src/runtime/runtime-test.cc
+                    v8/src/runtime/runtime-trace.cc
                     v8/src/runtime/runtime-typedarray.cc
                     v8/src/runtime/runtime-wasm.cc
+                    v8/src/runtime/runtime-weak-refs.cc
                     v8/src/runtime/runtime.cc
-                    v8/src/safepoint-table.cc
-                    v8/src/snapshot/mksnapshot.cc
                     v8/src/snapshot/code-serializer.cc
+                    v8/src/snapshot/context-deserializer.cc
+                    v8/src/snapshot/context-serializer.cc
                     v8/src/snapshot/deserializer.cc
-                    v8/src/snapshot/natives-common.cc
-                    v8/src/snapshot/partial-serializer.cc
+                    v8/src/snapshot/embedded/embedded-data.cc
+                    v8/src/snapshot/embedded/embedded-empty.cc
+                    v8/src/snapshot/embedded/embedded-file-writer.cc
+                    v8/src/snapshot/embedded/platform-embedded-file-writer-aix.cc
+                    v8/src/snapshot/embedded/platform-embedded-file-writer-base.cc
+                    v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc
+                    v8/src/snapshot/embedded/platform-embedded-file-writer-mac.cc
+                    v8/src/snapshot/embedded/platform-embedded-file-writer-win.cc
+                    v8/src/snapshot/mksnapshot.cc
+                    v8/src/snapshot/object-deserializer.cc
+                    v8/src/snapshot/read-only-deserializer.cc
+                    v8/src/snapshot/read-only-serializer.cc
+                    v8/src/snapshot/roots-serializer.cc
+                    v8/src/snapshot/serializer-deserializer.cc
                     v8/src/snapshot/serializer.cc
-                    v8/src/snapshot/serializer-common.cc
-                    v8/src/snapshot/snapshot-common.cc
+                    v8/src/snapshot/snapshot-compression.cc
+                    v8/src/snapshot/snapshot-data.cc
+                    v8/src/snapshot/snapshot-empty.cc
+                    v8/src/snapshot/snapshot-external.cc
                     v8/src/snapshot/snapshot-source-sink.cc
+                    v8/src/snapshot/snapshot-utils.cc
+                    v8/src/snapshot/snapshot.cc
+                    v8/src/snapshot/startup-deserializer.cc
                     v8/src/snapshot/startup-serializer.cc
-                    v8/src/source-position-table.cc
-                    v8/src/startup-data-util.cc
-                    v8/src/string-builder.cc
-                    v8/src/string-stream.cc
-                    v8/src/strtod.cc
-                    v8/src/ic/stub-cache.cc
+                    v8/src/strings/char-predicates.cc
+                    v8/src/strings/string-builder.cc
+                    v8/src/strings/string-case.cc
+                    v8/src/strings/string-stream.cc
+                    v8/src/strings/unicode-decoder.cc
+                    v8/src/strings/unicode.cc
+                    v8/src/strings/uri.cc
+                    v8/src/tasks/cancelable-task.cc
+                    v8/src/tasks/operations-barrier.cc
+                    v8/src/tasks/task-utils.cc
+                    v8/src/third_party/siphash/halfsiphash.cc
+                    v8/src/third_party/vtune/vtune-jit.cc
+                    v8/src/third_party/vtune/vtuneapi.cc
+                    v8/src/torque/cc-generator.cc
+                    v8/src/torque/cfg.cc
+                    v8/src/torque/class-debug-reader-generator.cc
+                    v8/src/torque/cpp-builder.cc
+                    v8/src/torque/csa-generator.cc
+                    v8/src/torque/declarable.cc
+                    v8/src/torque/declaration-visitor.cc
+                    v8/src/torque/declarations.cc
+                    v8/src/torque/earley-parser.cc
+                    v8/src/torque/global-context.cc
+                    v8/src/torque/implementation-visitor.cc
+                    v8/src/torque/instance-type-generator.cc
+                    v8/src/torque/instructions.cc
+                    v8/src/torque/ls/json-parser.cc
+                    v8/src/torque/ls/json.cc
+                    v8/src/torque/ls/message-handler.cc
+                    v8/src/torque/ls/torque-language-server.cc
+                    v8/src/torque/server-data.cc
+                    v8/src/torque/source-positions.cc
+                    v8/src/torque/torque-code-generator.cc
+                    v8/src/torque/torque-compiler.cc
+                    v8/src/torque/torque-parser.cc
+                    v8/src/torque/torque.cc
+                    v8/src/torque/type-inference.cc
+                    v8/src/torque/type-oracle.cc
+                    v8/src/torque/type-visitor.cc
+                    v8/src/torque/types.cc
+                    v8/src/torque/utils.cc
+                    v8/src/tracing/trace-categories.cc
                     v8/src/tracing/trace-event.cc
-                    v8/src/transitions.cc
-                    v8/src/type-cache.cc
-                    v8/src/type-feedback-vector.cc
-                    v8/src/type-info.cc
-                    v8/src/types.cc
-                    v8/src/unicode.cc
-                    v8/src/unicode-decoder.cc
-                    v8/src/uri.cc
-                    v8/src/utils.cc
-                    v8/src/v8.cc
-                    v8/src/v8threads.cc
-                    v8/src/version.cc
-                    v8/src/wasm/ast-decoder.cc
-                    v8/src/wasm/encoder.cc
+                    v8/src/tracing/traced-value.cc
+                    v8/src/tracing/tracing-category-observer.cc
+                    v8/src/trap-handler/handler-inside-posix.cc
+                    v8/src/trap-handler/handler-inside-win.cc
+                    v8/src/trap-handler/handler-inside.cc
+                    v8/src/trap-handler/handler-outside-posix.cc
+                    v8/src/trap-handler/handler-outside-simulator.cc
+                    v8/src/trap-handler/handler-outside-win.cc
+                    v8/src/trap-handler/handler-outside.cc
+                    v8/src/trap-handler/handler-shared.cc
+                    v8/src/utils/address-map.cc
+                    v8/src/utils/allocation.cc
+                    v8/src/utils/bit-vector.cc
+                    v8/src/utils/detachable-vector.cc
+                    v8/src/utils/identity-map.cc
+                    v8/src/utils/memcopy.cc
+                    v8/src/utils/ostreams.cc
+                    v8/src/utils/utils.cc
+                    v8/src/utils/v8dll-main.cc
+                    v8/src/utils/version.cc
+                    v8/src/wasm/baseline/liftoff-assembler.cc
+                    v8/src/wasm/baseline/liftoff-compiler.cc
+                    v8/src/wasm/c-api.cc
+                    v8/src/wasm/code-space-access.cc
+                    v8/src/wasm/function-body-decoder.cc
+                    v8/src/wasm/function-compiler.cc
+                    v8/src/wasm/graph-builder-interface.cc
+                    v8/src/wasm/init-expr-interface.cc
+                    v8/src/wasm/jump-table-assembler.cc
+                    v8/src/wasm/local-decl-encoder.cc
+                    v8/src/wasm/memory-protection-key.cc
+                    v8/src/wasm/memory-tracing.cc
+                    v8/src/wasm/module-compiler.cc
                     v8/src/wasm/module-decoder.cc
-                    v8/src/wasm/switch-logic.cc
+                    v8/src/wasm/module-instantiate.cc
+                    v8/src/wasm/signature-map.cc
+                    v8/src/wasm/simd-shuffle.cc
+                    v8/src/wasm/streaming-decoder.cc
+                    v8/src/wasm/sync-streaming-decoder.cc
+                    v8/src/wasm/value-type.cc
+                    v8/src/wasm/wasm-code-manager.cc
                     v8/src/wasm/wasm-debug.cc
+                    v8/src/wasm/wasm-engine.cc
                     v8/src/wasm/wasm-external-refs.cc
-                    v8/src/wasm/wasm-function-name-table.cc
+                    v8/src/wasm/wasm-features.cc
+                    v8/src/wasm/wasm-import-wrapper-cache.cc
+                    v8/src/wasm/wasm-init-expr.cc
                     v8/src/wasm/wasm-js.cc
+                    v8/src/wasm/wasm-module-builder.cc
+                    v8/src/wasm/wasm-module-sourcemap.cc
                     v8/src/wasm/wasm-module.cc
-                    v8/src/wasm/wasm-interpreter.cc
+                    v8/src/wasm/wasm-objects.cc
                     v8/src/wasm/wasm-opcodes.cc
                     v8/src/wasm/wasm-result.cc
-                    v8/src/zone.cc
-                    v8/src/crankshaft/x64/lithium-codegen-x64.cc
-                    v8/src/crankshaft/x64/lithium-gap-resolver-x64.cc
-                    v8/src/crankshaft/x64/lithium-x64.cc
-                    v8/src/x64/assembler-x64.cc
-                    v8/src/x64/builtins-x64.cc
-                    v8/src/x64/code-stubs-x64.cc
-                    v8/src/x64/codegen-x64.cc
-                    v8/src/x64/cpu-x64.cc
-                    v8/src/x64/deoptimizer-x64.cc
-                    v8/src/x64/disasm-x64.cc
-                    v8/src/x64/frames-x64.cc
-                    v8/src/x64/interface-descriptors-x64.cc
-                    v8/src/x64/macro-assembler-x64.cc
-                    v8/src/debug/x64/debug-x64.cc
-                    v8/src/full-codegen/x64/full-codegen-x64.cc
-                    v8/src/ic/x64/access-compiler-x64.cc
-                    v8/src/ic/x64/handler-compiler-x64.cc
-                    v8/src/ic/x64/ic-x64.cc
-                    v8/src/ic/x64/ic-compiler-x64.cc
-                    v8/src/ic/x64/stub-cache-x64.cc
-                    v8/src/regexp/x64/regexp-macro-assembler-x64.cc
-                    v8/src/compiler/x64/code-generator-x64.cc
-                    v8/src/compiler/x64/instruction-scheduler-x64.cc
-                    v8/src/compiler/x64/instruction-selector-x64.cc
-
-                    v8/src/base/accounting-allocator.cc
-                    v8/src/base/atomicops_internals_x86_gcc.cc
-                    v8/src/base/bits.cc
-                    v8/src/base/cpu.cc
-                    v8/src/base/division-by-constant.cc
-                    v8/src/base/file-utils.cc
-                    v8/src/base/functional.cc
-                    v8/src/base/ieee754.cc
-                    v8/src/base/logging.cc
-                    v8/src/base/once.cc
-                    v8/src/base/platform/time.cc
-                    v8/src/base/platform/condition-variable.cc
-                    v8/src/base/platform/mutex.cc
-                    v8/src/base/platform/semaphore.cc
-                    v8/src/base/sys-info.cc
-                    v8/src/base/utils/random-number-generator.cc
-                    v8/src/base/platform/platform-runtimejs.cc
-
-                    v8/src/gen/experimental-extras-libraries.cc
-                    v8/src/gen/experimental-libraries.cc
-                    v8/src/gen/extras-libraries.cc
-                    v8/src/gen/libraries.cc
-                    v8/src/gen/resources.cc
+                    v8/src/wasm/wasm-serialization.cc
+                    v8/src/wasm/wasm-subtyping.cc
+                    v8/src/web-snapshot/web-snapshot.cc
+                    v8/src/zone/accounting-allocator.cc
+                    v8/src/zone/type-stats.cc
+                    v8/src/zone/zone-segment.cc
+                    v8/src/zone/zone.cc
 
                                 #v8/src/snapshot/snapshot-empty.cc
                     ../gen/snapshot.cc            
