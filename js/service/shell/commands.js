@@ -74,19 +74,31 @@ const cmds = {
   },
   'help': {
     'description': 'Show this message or show usage of the command =)',
-    'usage':       'help <command>',
+    'usage':       'help <command> |OR| help |OR| help -p[=n] |OR| help --page[=n]',
     run (_args, f, res) {
       let args = _args.trim();
 
-      if (!args) {
-        f.stdio.writeLine('Commands list:');
+      if (!args || args.split(/\s+/)[0].startsWith("-p") || args.split(/\s+/)[0].startsWith("--page")) {
+        var tmp_page = args.split(/\s+/)[0].slice(3 + 4 * Number(args.split(/\s+/)[0].startsWith("--page"))) - 1 || 0;
+        if(tmp_page == -1) tmp_page = 0;
+        var list = Array.from(processor.getCommands()).sort();
+        if(tmp_page < 0 || tmp_page + 1 > Math.ceil(list.length / (vga.HEIGHT - 4))){
+          f.stdio.setColor('red');
+          f.stdio.write("Invalid page!");
+          return res(1);
+        }
+
+        f.stdio.writeLine(`Commands list (page ${tmp_page + 1}/${Math.ceil(list.length / (vga.HEIGHT - 4))}):`);
         // let out = 'Commands list:\n';
-        for (const i of processor.getCommands()) {
+
+        for (var i = tmp_page * (vga.HEIGHT - 4); i < (tmp_page + 1) * (vga.HEIGHT - 4); i++) {
         //   out += `${i}: ${processor.getDescription(i)}\n`;
+          if(i == list.length) break;
+          var _i = list[i];
           f.stdio.setColor('yellow');
-          f.stdio.write(i);
+          f.stdio.write(_i);
           f.stdio.setColor('white');
-          f.stdio.writeLine(`: ${processor.getDescription(i)}`);
+          f.stdio.writeLine(`: ${processor.getDescription(_i)}`);
         }
         // f.stdio.write(out);
       } else {
@@ -153,17 +165,61 @@ const cmds = {
   },
   'install': {
     'description': 'Install applications',
-    'usage':       'install <app>',
+    'usage':       'install <app> |OR| install --list[=n] |OR| install -l[=n]',
     run (app, f, res) {
-      if ($$.appman.install(app.trim())) {
+      if(app.trim().split(/\s+/)[0].slice(0, 2) == "-l" || app.trim().split(/\s+/)[0].slice(0, 6) == "--list"){
+        const fs = require('fs');
+        fs.readdir("/system/js/apps/", "utf-8", (err, list_) => {
+          if(err){
+            f.stdio.writeError("Unknown error!");
+            debug(error);
+            return res(1);
+          }
+          var list = [], ml = 1;
+          for(var i = 0; i < list_.length; i++){
+            ml = Math.max(ml, list_[i].length + 1);
+          }
+          for(var i = 0; i < list_.length; i++){
+            list.push(list_[i] + " ".repeat(ml - list_[i].length) + "| " + fs.readFileSync("/system/js/apps/" + list_[i] + "/description.txt", "utf-8"));
+          }
+          if(app.trim().split(/\s+/)[0] == "-l" || app.trim().split(/\s+/)[0] == "--list") app = "-l=1";
+          var tmp_page = app.trim().slice(Number(app.trim().split(/\s+/)[0].slice(0, 6) == "--list") * 4 + 3) - 1;
+          if(tmp_page + 1 > Math.ceil(list.length / (vga.HEIGHT - 12))){
+            f.stdio.setColor('red');
+            f.stdio.writeLine("Invalid page!");
+            return res(1);
+          }
+          f.stdio.setColor('magenta');
+          f.stdio.writeLine(`Applications list (page: ${tmp_page + 1}/${Math.ceil(list.length / (vga.HEIGHT - 12))})
+`);
+          f.stdio.setColor('yellow');
+          for(var i = tmp_page * (vga.HEIGHT - 12); i < (tmp_page + 1) * (vga.HEIGHT - 12); i++){
+            if(i  == list.length) break;
+            f.stdio.writeLine(list[i]);
+          }
+          f.stdio.setColor('cyan');
+          f.stdio.writeLine(`
+-----
+Notice: when you are installing an app, it loads into RAM and uninstalls after rebooting.`);
+          f.stdio.setColor('blue');
+          f.stdio.writeLine(`
+To start an installed app, type:
+start <app>`);
+        });
+        return res(0);
+      }
+      if ($$.appman.install(app.trim().split(/\s+/)[0])) {
+        
         f.stdio.setColor('green');
         f.stdio.writeLine(`App ${app} installed successful!`);
 
         return res(0);
-      }
-      f.stdio.writeError(`Error happened during ${app} installation`);
+        
+      }else{
+        f.stdio.writeError(`Error happened during ${app} installation`);
 
-      return res(1);
+        return res(1);
+      }
     },
   },
   'speaker': {
