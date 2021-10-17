@@ -92,7 +92,7 @@ const cmds = {
         f.stdio.writeLine(`Commands list (page ${tmp_page + 1}/${Math.ceil(commandList.length / height)}):`);
         // let out = 'Commands list:\n';
 
-        for (var i = tmp_page * height; i < (tmp_page + 1) * height; i++) {
+        for (let i = tmp_page * height; i < (tmp_page + 1) * height; i++) {
         //   out += `${i}: ${processor.getDescription(i)}\n`;
           if(i == commandList.length) break;
           const command = commandList[i];
@@ -195,7 +195,7 @@ const cmds = {
           f.stdio.setColor('magenta');
           f.stdio.writeLine(`Applications list (page: ${tmp_page + 1}/${Math.ceil(list.length / height)})`);
           f.stdio.setColor('yellow');
-          for(var i = tmp_page * height; i < (tmp_page + 1) * height; i++){
+          for(let i = tmp_page * height; i < (tmp_page + 1) * height; i++){
             if(i  == list.length) break;
             f.stdio.writeLine(list[i]);
           }
