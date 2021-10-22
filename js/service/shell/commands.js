@@ -22,6 +22,8 @@ const processor = require('./index.js');
 const { log, warn } = $$.logger;
 const { HEIGHT } = require('../../core/tty/vga.js');
 
+const padEnd = (s, len, str = " ") => (s + str.repeat(Math.ceil((len - s.length) / str.length))).split(0, len);
+
 debug('Loading commands...');
 
 const cmds = {
@@ -77,10 +79,10 @@ const cmds = {
     'description': 'Show this message or show usage of the command =)',
     'usage':       'help <command> |OR| help |OR| help -p[=n] |OR| help --page[=n]',
     run (_args, f, res) {
-      let args = _args.trim();
+      let args = _args.trim().split(/\s+/);
 
-      if (!args || args.split(/\s+/)[0].startsWith("-p") || args.split(/\s+/)[0].startsWith("--page")) {
-        let tmp_page = args.split(/\s+/)[0].slice(3 + 4 * Number(args.split(/\s+/)[0].startsWith("--page"))) - 1 || 0;
+      if (!args || args[0].startsWith("-p") || args[0].startsWith("--page")) {
+        let tmp_page = args[0].slice(3 + 4 * Number(args[0].startsWith("--page"))) - 1 || 0;
         if(tmp_page == -1) tmp_page = 0;
         const height = HEIGHT - 4;
         const commandList = Array.from(processor.getCommands()).sort();
@@ -103,7 +105,7 @@ const cmds = {
         }
         // f.stdio.write(out);
       } else {
-        args = args.split(/\s+/)[0]; // Safety
+        args = args[0]; // Safety
         f.stdio.setColor('lightcyan');
         f.stdio.write(processor.getUsage(args));
       }
@@ -182,10 +184,10 @@ const cmds = {
             maxLength = Math.max(maxLength, app.length + 1);
           }
           for(const app of list_){
-            list.push(app + " ".repeat(maxLength - app.length) + "| " + fs.readFileSync("/system/js/apps/" + app + "/description.txt", "utf-8").replace("\n", "")); //костыль, не знаю, почему, но иногда появляется перенос строки в конце описания
+            list.push(padEnd(app, maxLength) + "| " + fs.readFileSync(`/system/js/apps/${app}/description.txt`, "utf-8").replace("\n", "")); //костыль, не знаю, почему, но иногда появляется перенос строки в конце описания
           }
           if(args[0] === "-l" || args[0] === "--list") args[0] = "-l=1";
-          const tmp_page = args[0].slice(Number(args[0].slice(0, 6) == "--list") * 4 + 3) - 1; //Получаем номер страницы мз первого аргумента
+          const tmp_page = args[0].slice(args[0].search(/=/) + 1) - 1;
           const height = HEIGHT - 12;
           if(tmp_page + 1 > Math.ceil(list.length / height)){
             f.stdio.setColor('red');
