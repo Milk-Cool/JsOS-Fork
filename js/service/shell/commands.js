@@ -1,4 +1,4 @@
-/**
+/** 
  *    Copyright 2018 JsOS authors
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,9 @@ const $$ = require('jsos');
 const persistence = require('persistence');
 const processor = require('./index.js');
 const { log, warn } = $$.logger;
+const { HEIGHT } = require('../../core/tty/vga.js');
+
+const padEnd = (s, len, str = " ") => (s + str.repeat(Math.ceil((len - s.length) / str.length))).split(0, len);
 
 debug('Loading commands...');
 
@@ -74,23 +77,35 @@ const cmds = {
   },
   'help': {
     'description': 'Show this message or show usage of the command =)',
-    'usage':       'help <command>',
+    'usage':       'help <command> |OR| help |OR| help -p[=n] |OR| help --page[=n]',
     run (_args, f, res) {
-      let args = _args.trim();
+      let args = _args.trim().split(/\s+/);
 
-      if (!args) {
-        f.stdio.writeLine('Commands list:');
+      if (!args || args[0].startsWith("-p") || args[0].startsWith("--page")) {
+        let tmp_page = args[0].slice(3 + 4 * Number(args[0].startsWith("--page"))) - 1 || 0;
+        if(tmp_page == -1) tmp_page = 0;
+        const height = HEIGHT - 4;
+        const commandList = Array.from(processor.getCommands()).sort();
+        if(tmp_page < 0 || tmp_page + 1 > Math.ceil(commandList.length / height)){
+          f.stdio.setColor('red');
+          f.stdio.write("Invalid page!");
+          return res(1);
+        }
+        f.stdio.writeLine(`Commands list (page ${tmp_page + 1}/${Math.ceil(commandList.length / height)}):`);
         // let out = 'Commands list:\n';
-        for (const i of processor.getCommands()) {
+
+        for (let i = tmp_page * height; i < (tmp_page + 1) * height; i++) {
         //   out += `${i}: ${processor.getDescription(i)}\n`;
+          if(i == commandList.length) break;
+          const command = commandList[i];
           f.stdio.setColor('yellow');
-          f.stdio.write(i);
+          f.stdio.write(command);
           f.stdio.setColor('white');
-          f.stdio.writeLine(`: ${processor.getDescription(i)}`);
+          f.stdio.writeLine(`: ${processor.getDescription(command)}`);
         }
         // f.stdio.write(out);
       } else {
-        args = args.split(/\s+/)[0]; // Safety
+        args = args[0]; // Safety
         f.stdio.setColor('lightcyan');
         f.stdio.write(processor.getUsage(args));
       }
@@ -153,17 +168,62 @@ const cmds = {
   },
   'install': {
     'description': 'Install applications',
-    'usage':       'install <app>',
-    run (app, f, res) {
-      if ($$.appman.install(app.trim())) {
-        f.stdio.setColor('green');
-        f.stdio.writeLine(`App ${app} installed successful!`);
-
+    'usage':       'install <app> |OR| install --list[=n] |OR| install -l[=n]',
+    run (_args, f, res) {
+      let args = _args.trim().split(/\s+/);
+      if(args[0].slice(0, 2) === "-l" || args[0].slice(0, 6) === "--list"){
+        const fs = require('fs');
+        fs.readdir("/system/js/apps/", "utf-8", (err, list_) => {
+          if(err){
+            f.stdio.writeError("Unknown error!");
+            debug(error);
+            return res(1);
+          }
+          let list = [], maxLength = 1;
+          for(const app of list_){
+            maxLength = Math.max(maxLength, app.length + 1);
+          }
+          for(const app of list_){
+            list.push(padEnd(app, maxLength) + "| " + fs.readFileSync(`/system/js/apps/${app}/description.txt`, "utf-8").replace("\n", "")); //костыль, не знаю, почему, но иногда появляется перенос строки в конце описания
+          }
+          if(args[0] === "-l" || args[0] === "--list") args[0] = "-l=1";
+          const tmp_page = args[0].slice(args[0].search(/=/) + 1) - 1;
+          const height = HEIGHT - 12;
+          if(tmp_page + 1 > Math.ceil(list.length / height)){
+            f.stdio.setColor('red');
+            f.stdio.writeLine("Invalid page!");
+            return res(1);
+          }
+          f.stdio.setColor('magenta');
+          f.stdio.writeLine(`Applications list (page: ${tmp_page + 1}/${Math.ceil(list.length / height)})`);
+          f.stdio.setColor('yellow');
+          for(let i = tmp_page * height; i < (tmp_page + 1) * height; i++){
+            if(i  == list.length) break;
+            f.stdio.writeLine(list[i]);
+          }
+          f.stdio.setColor('cyan');
+          f.stdio.writeLine(`
+-----
+Notice: when you are installing an app, it loads into RAM and uninstalls after rebooting.`);
+          f.stdio.setColor('blue');
+          f.stdio.writeLine(`
+To start an installed app, type:
+start <app>`);
+        });
         return res(0);
       }
-      f.stdio.writeError(`Error happened during ${app} installation`);
+      if ($$.appman.install(args[0])) {
+        
+        f.stdio.setColor('green');
+        f.stdio.writeLine(`App ${args[0]} installed successful!`);
 
-      return res(1);
+        return res(0);
+        
+      } else {
+        f.stdio.writeError(`Error happened during installation of ${app}`);
+
+        return res(1);
+      }
     },
   },
   'speaker': {
@@ -397,3 +457,4 @@ for (const i in cmds) {
 debug('Commands loaded successful!');
 
 module.exports = cmds;
+
