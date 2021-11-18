@@ -28,7 +28,7 @@ exports.clear = printer.clear;
 let isReading = false;
 
 function listenCtrlAltDel (keyinfo) {
-  if (keyinfo.type == "kpdel"
+  if (keyinfo.type === "kpdel"
   && keyinfo.ctrl
   && keyinfo.alt) {
     require("./ctrlaltdel.js")();
