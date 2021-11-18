@@ -83,7 +83,7 @@ const cmds = {
 
       if (args.length === 0 || args[0].startsWith("-p") || args[0].startsWith("--page")) {
       	if (!args.length) args = ["-p=1"];
-      	let tmp_page = args[0].slice(3 + 4 * Number(args[0].startsWith("--page"))) - 1;
+      	const tmp_page = args[0].slice(3 + 4 * Number(args[0].startsWith("--page"))) - 1;
         const height = HEIGHT - 4;
         const commandList = Array.from(processor.getCommands()).sort();
         if(tmp_page < 0 || tmp_page + 1 > Math.ceil(commandList.length / height)){
