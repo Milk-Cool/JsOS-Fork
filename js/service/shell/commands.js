@@ -81,7 +81,6 @@ const cmds = {
     run (_args, f, res) {
       let args = _args.trim().split(/(\s+)/).filter(i => i.trim().length > 0);
 
-      debug(args.length); debug(args);
       if (args.length == 0 || args[0].startsWith("-p") || args[0].startsWith("--page")) {
       	if (args.length == 0) args = ["-p=1"];
       	let tmp_page = args[0].slice(3 + 4 * Number(args[0].startsWith("--page"))) - 1;
