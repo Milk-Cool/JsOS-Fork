@@ -27,6 +27,15 @@ exports.clear = printer.clear;
 
 let isReading = false;
 
+function listenCtrlAltDel (keyinfo) {
+  if (keyinfo.type == "kpdel"
+  && keyinfo.ctrl
+  && keyinfo.alt) {
+    require("./ctrlaltdel.js")();
+  }
+}
+keyboard.onKeydown.add(listenCtrlAltDel);
+
 exports.read = (cb) => {
   if (isReading) {
     throw new Error('nested terminal read is not allowed');
