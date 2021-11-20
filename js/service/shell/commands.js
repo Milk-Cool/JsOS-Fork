@@ -79,11 +79,11 @@ const cmds = {
     'description': 'Show this message or show usage of the command =)',
     'usage':       'help <command> |OR| help |OR| help -p[=n] |OR| help --page[=n]',
     run (_args, f, res) {
-      let args = _args.trim().split(/\s+/);
+      let args = _args.trim().split(/(\s+)/).filter(i => i.trim().length > 0);
 
-      if (!args || args[0].startsWith("-p") || args[0].startsWith("--page")) {
-        let tmp_page = args[0].slice(3 + 4 * Number(args[0].startsWith("--page"))) - 1 || 0;
-        if(tmp_page == -1) tmp_page = 0;
+      if (args.length === 0 || args[0].startsWith("-p") || args[0].startsWith("--page")) {
+      	if (!args.length) args = ["-p=1"];
+      	const tmp_page = args[0].slice(3 + 4 * Number(args[0].startsWith("--page"))) - 1;
         const height = HEIGHT - 4;
         const commandList = Array.from(processor.getCommands()).sort();
         if(tmp_page < 0 || tmp_page + 1 > Math.ceil(commandList.length / height)){
