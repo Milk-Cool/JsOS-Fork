@@ -35,7 +35,7 @@
     "get-set": "*",
     "js-vim-command": "*",
     "mauve": "*",
-    "underscore": "1.4.4"
+    "underscore": "1.13.6"
   },
   "deprecated": false,
   "description": "A JavaScript implementation of the vim text editor",
