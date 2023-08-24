@@ -30,7 +30,7 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "rgb": "~0.0.1",
+    "rgb": "~0.1.0",
     "x256": "https://github.com/itsjoesullivan/node-x256/archive/master.tar.gz"
   },
   "deprecated": false,
